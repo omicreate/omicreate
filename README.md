@@ -2,45 +2,54 @@
   <img src="assets/20260623_icon_official_abstract-build-mark_under-1mb.png" alt="omicreate logo" width="140">
 </p>
 
-# Hi, I am `omicreate`
+# こんにちは、`omicreate` です
 
-好きなものを作り、試し、公開しながら、少しずつ使いやすい形に育てています。
+好きなものを作り、試し、公開しながら、少しずつ使いやすい形に育てている個人開発アカウントです。
+
+便利な小ツール、Web制作、AIを使った実験、制作ログなどを中心に、完成品だけでなく「なぜ作ったか」「どこを直したか」「次に何を試すか」も残していきます。
 
 I build, test, and share small projects in public, then keep improving them over time.
 
-## What I Build
+## 作っているもの
 
-- Small useful tools
-- Web experiments
-- AI-assisted creation workflows
-- Build logs and notes from personal projects
+- 日常や開発で使える小さな便利ツール
+- ブラウザで試せるWebアプリやUI実験
+- AIを使った制作補助やワークフローの試作
+- 個人開発の制作ログ、設計メモ、改善メモ
 
-## Featured Projects
+まだ小さなものが中心ですが、公開して、使ってみて、少しずつ直していくことを大切にしています。
 
-### Soft Tennis Note
+## 公開中のプロジェクト
 
-A mobile-first match note and analysis app for soft tennis.
+### ソフトテニス試合ノート
 
-- Demo: https://omicreate.github.io/soft-tennis-note/
-- Repo: https://github.com/omicreate/soft-tennis-note
-- Focus: match records, point flow, analysis summaries, and shareable result images
+スマホで使うことを前提にした、ソフトテニス専用の試合記録・分析アプリです。
+試合を外から見る保護者、控え選手、指導者が、ポイントの流れや次に活かすメモを残せるように作っています。
 
-### Hoshimachi no Houkago - Typing Game
+- 試す: https://omicreate.github.io/soft-tennis-note/
+- リポジトリ: https://github.com/omicreate/soft-tennis-note
+- 主な内容: 試合記録、ポイントの流れ、分析サマリー、共有用画像
 
-A single-file browser typing game with original Japanese dialogue.
+### 星待ちの放課後 - セリフタイピング
 
-- Play: https://omicreate.github.io/typing-game/
-- Repo: https://github.com/omicreate/typing-game
-- Focus: romaji input, short story scenes, keyboard practice, and lightweight HTML
+表示されたセリフをローマ字で打つ、ブラウザ向けの小さなタイピングゲームです。
+オリジナルの短い物語と、かなベースのローマ字入力判定を試すために作っています。
 
-## Build Style
+- 遊ぶ: https://omicreate.github.io/typing-game/
+- リポジトリ: https://github.com/omicreate/typing-game
+- 主な内容: ローマ字入力、短い物語、キーボード練習、単一HTML
+
+## 作り方
+
+最初から大きく作り込むよりも、まず動く形にして公開し、あとから分かりにくいところや使いにくいところを直していくスタイルです。
+
+現時点では収益化よりも、見つけてもらうこと、使ってもらうこと、フィードバックをもらうことを大切にしています。
 
 I like making small things that can be tried quickly, shared publicly, and improved through feedback.
 
-小さく作って公開し、使ってみた人の反応や自分の気づきをもとに、少しずつ直していくスタイルです。
+## フィードバック
 
-## Feedback
+気になるものがあれば、試してみたり、スターやIssueで反応をもらえると嬉しいです。
+「ここが分かりにくい」「こうすると使いやすそう」みたいな小さなコメントも歓迎です。
 
 If something looks useful, feel free to try it, star it, or open an issue with feedback.
-
-気になるものがあれば、スターやIssueで反応をもらえると嬉しいです。
