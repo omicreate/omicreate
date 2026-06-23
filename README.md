@@ -54,3 +54,8 @@ I like making small things that can be tried quickly, shared publicly, and impro
 「ここが分かりにくい」「こうすると使いやすそう」みたいな小さなコメントも歓迎です。
 
 If something looks useful, feel free to try it, star it, or open an issue with feedback.
+
+## リンク
+
+- GitHub: https://github.com/omicreate
+- X: https://x.com/omicreate
