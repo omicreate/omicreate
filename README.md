@@ -36,8 +36,8 @@ I build, test, and share small projects in public, then keep improving them over
 表示されたセリフをローマ字で打つ、ブラウザ向けの小さなタイピングゲームです。
 オリジナルの短い物語と、かなベースのローマ字入力判定を試すために作っています。
 
-- 遊ぶ: https://omicreate.github.io/typing-game/
-- リポジトリ: https://github.com/omicreate/typing-game
+- 遊ぶ: https://omicreate.github.io/hoshimachi-serifu-typing/
+- リポジトリ: https://github.com/omicreate/hoshimachi-serifu-typing
 - 主な内容: ローマ字入力、短い物語、キーボード練習、単一HTML
 
 ### モジリアクト
