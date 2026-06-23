@@ -40,6 +40,15 @@ I build, test, and share small projects in public, then keep improving them over
 - リポジトリ: https://github.com/omicreate/typing-game
 - 主な内容: ローマ字入力、短い物語、キーボード練習、単一HTML
 
+### モジリアクト
+
+打つたびに、ことばの意味が文字や背景のエフェクトとして反応するブラウザ向けタイピングゲームです。
+「薄い」「爆速」「雨」「炎」「氷」「無音」「混乱」など、見た目の変化に直結する100語だけをお題にしています。
+
+- 遊ぶ: https://omicreate.github.io/mojireact-typing-game/
+- リポジトリ: https://github.com/omicreate/mojireact-typing-game
+- 主な内容: ローマ字入力、意味連動エフェクト、100語のお題、GitHub Pages公開
+
 ## 作り方
 
 最初から大きく作り込むよりも、まず動く形にして公開し、あとから分かりにくいところや使いにくいところを直していくスタイルです。
