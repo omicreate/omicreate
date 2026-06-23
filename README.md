@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/20260623_icon_official_abstract-build-mark_under-1mb.png" alt="omicreate logo" width="140">
+</p>
+
 # Hi, I am `omicreate`
 
 好きなものを作り、試し、公開しながら、少しずつ使いやすい形に育てています。
@@ -40,4 +44,3 @@ I like making small things that can be tried quickly, shared publicly, and impro
 If something looks useful, feel free to try it, star it, or open an issue with feedback.
 
 気になるものがあれば、スターやIssueで反応をもらえると嬉しいです。
-
