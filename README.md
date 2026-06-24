@@ -49,14 +49,6 @@ I build, test, and share small projects in public, then keep improving them over
 - リポジトリ: https://github.com/omicreate/mojireact-typing-game
 - 主な内容: ローマ字入力、意味連動エフェクト、100語のお題、GitHub Pages公開
 
-## README運用方針
-
-公開プロジェクトのREADMEは、共通テンプレートに沿って整備します。
-新しく公開する前に、READMEの構成、ライセンス表記、プライバシー説明、公開してよい情報だけが含まれていることを確認します。
-
-- テンプレート: [docs/README_TEMPLATE.md](docs/README_TEMPLATE.md)
-- 公開前チェックリスト: [docs/PUBLIC_RELEASE_CHECKLIST.md](docs/PUBLIC_RELEASE_CHECKLIST.md)
-
 ## 作り方
 
 最初から大きく作り込むよりも、まず動く形にして公開し、あとから分かりにくいところや使いにくいところを直していくスタイルです。
