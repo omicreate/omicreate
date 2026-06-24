@@ -49,6 +49,11 @@ I build, test, and share small projects in public, then keep improving them over
 - リポジトリ: https://github.com/omicreate/mojireact-typing-game
 - 主な内容: ローマ字入力、意味連動エフェクト、100語のお題、GitHub Pages公開
 
+## 公開前チェック
+
+- `npm run check:public-info`
+- [セキュリティ方針](SECURITY.md)
+
 ## 作り方
 
 最初から大きく作り込むよりも、まず動く形にして公開し、あとから分かりにくいところや使いにくいところを直していくスタイルです。
