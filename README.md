@@ -31,6 +31,15 @@ I build, test, and share small projects in public, then keep improving them over
 - リポジトリ: https://github.com/omicreate/soft-tennis-note
 - 主な内容: 試合記録、ポイントの流れ、分析サマリー、共有用画像
 
+### ソフテニルールドリル
+
+ソフトテニスのルール、審判コール、公式用語を4択で学べるスマホ向け学習アプリです。
+小学生・中学生、初心者、審判試験前の確認に使いやすいよう、クイズ、模擬試験、苦手問題の復習を入れています。
+
+- 公開URL: https://omicreate.github.io/soft-tennis-rule-drill/
+- リポジトリ: https://github.com/omicreate/soft-tennis-rule-drill
+- 主な内容: 4択クイズ、模擬試験、学習記録、ルール出典の確認
+
 ### 星待ちの放課後 - セリフタイピング
 
 表示されたセリフをローマ字で打つ、ブラウザ向けの小さなタイピングゲームです。
