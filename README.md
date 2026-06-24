@@ -27,7 +27,7 @@ I build, test, and share small projects in public, then keep improving them over
 スマホで使うことを前提にした、ソフトテニス専用の試合記録・分析アプリです。
 試合を外から見る保護者、控え選手、指導者が、ポイントの流れや次に活かすメモを残せるように作っています。
 
-- 試す: https://omicreate.github.io/soft-tennis-note/
+- 公開URL: https://omicreate.github.io/soft-tennis-note/
 - リポジトリ: https://github.com/omicreate/soft-tennis-note
 - 主な内容: 試合記録、ポイントの流れ、分析サマリー、共有用画像
 
@@ -36,7 +36,7 @@ I build, test, and share small projects in public, then keep improving them over
 表示されたセリフをローマ字で打つ、ブラウザ向けの小さなタイピングゲームです。
 オリジナルの短い物語と、かなベースのローマ字入力判定を試すために作っています。
 
-- 遊ぶ: https://omicreate.github.io/hoshimachi-serifu-typing/
+- 公開URL: https://omicreate.github.io/hoshimachi-serifu-typing/
 - リポジトリ: https://github.com/omicreate/hoshimachi-serifu-typing
 - 主な内容: ローマ字入力、短い物語、キーボード練習、単一HTML
 
@@ -45,14 +45,17 @@ I build, test, and share small projects in public, then keep improving them over
 打つたびに、ことばの意味が文字や背景のエフェクトとして反応するブラウザ向けタイピングゲームです。
 「薄い」「爆速」「雨」「炎」「氷」「無音」「混乱」など、見た目の変化に直結する100語だけをお題にしています。
 
-- 遊ぶ: https://omicreate.github.io/mojireact-typing-game/
+- 公開URL: https://omicreate.github.io/mojireact-typing-game/
 - リポジトリ: https://github.com/omicreate/mojireact-typing-game
 - 主な内容: ローマ字入力、意味連動エフェクト、100語のお題、GitHub Pages公開
 
-## 公開前チェック
+## README運用方針
 
-- `npm run check:public-info`
-- [セキュリティ方針](SECURITY.md)
+公開プロジェクトのREADMEは、共通テンプレートに沿って整備します。
+新しく公開する前に、READMEの構成、ライセンス表記、プライバシー説明、公開してよい情報だけが含まれていることを確認します。
+
+- テンプレート: [docs/README_TEMPLATE.md](docs/README_TEMPLATE.md)
+- 公開前チェックリスト: [docs/PUBLIC_RELEASE_CHECKLIST.md](docs/PUBLIC_RELEASE_CHECKLIST.md)
 
 ## 作り方
 
