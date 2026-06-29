@@ -1,7 +1,7 @@
 # READMEテンプレート
 
 このテンプレートは、omicreateで今後公開するプロジェクトのREADMEをそろえるための基準です。
-公開前に `docs/PUBLIC_RELEASE_CHECKLIST.md` も確認してください。
+公開時や更新時に `docs/PUBLIC_RELEASE_CHECKLIST.md` も確認してください。
 
 ## 使い方
 

@@ -33,12 +33,12 @@ I build, test, and share small projects in public, then keep improving them over
 
 ### ソフテニルールドリル
 
-ソフトテニスのルール、審判コール、公式用語を4択で学べるスマホ向け学習アプリです。
-小学生・中学生、初心者、審判試験前の確認に使いやすいよう、クイズ、模擬試験、苦手問題の復習を入れています。
+ソフトテニスを始めたばかりの子どもと保護者向けに、基本ルールを4択で確認できるスマホ・タブレット向けドリルアプリです。
+1セット10問で取り組みやすくし、記録と振り返りで少しずつ続けられる形にしています。
 
 - 公開URL: https://omicreate.github.io/soft-tennis-rule-drill/
 - リポジトリ: https://github.com/omicreate/soft-tennis-rule-drill
-- 主な内容: 4択クイズ、模擬試験、学習記録、ルール出典の確認
+- 主な内容: 4択ドリル、10問セット、学習記録、振り返り
 
 ### 星待ちの放課後 - セリフタイピング
 
