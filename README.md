@@ -51,8 +51,8 @@ Three-choice quiz videos that train game sense — rules, positioning and double
   <br><sub>ルールの内容は最新の公式ルールと照らし合わせ、ソフトテニスの問題には根拠の条番号をつけています。</sub>
 - **Tested before every release.** Each push runs the tests, and the app is published only if they pass.
   <br><sub>push するたびにテストを回し、通ったときだけ公開します。</sub>
-- **Privacy first.** No login, no ads, no cookies. Your records stay in your browser; the apps only send anonymous usage counts.
-  <br><sub>ログイン・広告・Cookie なし。記録は端末の中だけに保存し、送るのは匿名の利用回数だけです。</sub>
+- **Privacy first.** No login, no ads, no cookies. Your records stay in your browser; the apps only send anonymous usage counts, and respect Do Not Track / Global Privacy Control.
+  <br><sub>ログイン・広告・Cookie なし。記録は端末の中だけに保存し、送るのは匿名の利用回数だけです。ブラウザの「追跡しない」（DNT・GPC）がオンなら何も送りません。</sub>
 - **Open source.** App code is MIT-licensed; characters, art and questions stay mine.
   <br><sub>アプリのコードは MIT ライセンスで公開しています（キャラクター・絵・問題は対象外）。</sub>
 - **Human-led, AI-assisted.** I plan, review and make the final calls; AI agents help write code and produce videos.
