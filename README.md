@@ -53,5 +53,7 @@ Three-choice quiz videos that train game sense — rules, positioning and double
   <br><sub>push するたびにテストを回し、通ったときだけ公開します。</sub>
 - **Privacy first.** No login, no ads, no cookies. Your records stay in your browser; the apps only send anonymous usage counts.
   <br><sub>ログイン・広告・Cookie なし。記録は端末の中だけに保存し、送るのは匿名の利用回数だけです。</sub>
+- **Open source.** App code is MIT-licensed; characters, art and questions stay mine.
+  <br><sub>アプリのコードは MIT ライセンスで公開しています（キャラクター・絵・問題は対象外）。</sub>
 - **Human-led, AI-assisted.** I plan, review and make the final calls; AI agents help write code and produce videos.
   <br><sub>企画・確認・最終判断は自分で行い、コードや動画づくりをAIエージェントと分担しています。</sub>
