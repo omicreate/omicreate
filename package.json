@@ -1,0 +1,9 @@
+{
+  "name": "omicreate-profile",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check:public-info": "node scripts/check-public-info.js",
+    "test": "npm run check:public-info"
+  }
+}
