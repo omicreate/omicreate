@@ -9,31 +9,26 @@ Made by a solo developer in Japan, together with AI agents.
 
 ## Apps / アプリ
 
-<table>
-<tr>
-<td width="33%" valign="top">
-<a href="https://omicreate.github.io/pickle-asobi/?lang=en"><img src="https://omicreate.github.io/pickle-asobi/ogp.png" alt="Play with Pikuru"></a>
-<br><b><a href="https://omicreate.github.io/pickle-asobi/?lang=en">Play with Pikuru</a></b><br>
-<sub>ピクルくんとあそぼ ・ English / 日本語</sub>
-<br>Pickleball party games for one phone or tablet. Two players face each other across the screen, and each picks their own level — so kids and adults can play together.
-<br><sub>1台を囲んで遊ぶピックルボールのミニゲーム集。レベルは1人ずつ選べるので、親子でも勝負になります。</sub>
-</td>
-<td width="33%" valign="top">
-<a href="https://omicreate.github.io/softtennis-iq/"><img src="https://omicreate.github.io/softtennis-iq/ogp.png" alt="Soft Tennis IQ"></a>
-<br><b><a href="https://omicreate.github.io/softtennis-iq/">Soft Tennis IQ</a></b><br>
-<sub>ソフトテニスIQ ・ 日本語</sub>
-<br>Rule drills, a formation board and a match notebook for soft tennis players.
-<br><sub>ルールドリル・陣形ラボ・試合ノートを1つにまとめた、選手向けのアプリ。</sub>
-</td>
-<td width="33%" valign="top">
-<a href="https://omicreate.github.io/softtennis-asobi/"><img src="https://omicreate.github.io/softtennis-asobi/ogp.png" alt="Hawkeye-sensei to Asobo"></a>
-<br><b><a href="https://omicreate.github.io/softtennis-asobi/">Hawkeye-sensei to Asobo</a></b><br>
-<sub>ホークアイ先生とあそぼ ・ 日本語</sub>
-<br>The soft tennis version of the party games.
-<br><sub>ミニゲーム集のソフトテニス版。</sub>
-</td>
-</tr>
-</table>
+### [Play with Pikuru](https://omicreate.github.io/pickle-asobi/?lang=en) ・ ピクルくんとあそぼ
+
+<a href="https://omicreate.github.io/pickle-asobi/?lang=en"><img src="https://omicreate.github.io/pickle-asobi/ogp.png" alt="Play with Pikuru" width="480"></a>
+
+Pickleball party games for one phone or tablet. Two players face each other across the screen, and each picks their own level — so kids and adults can play together. **English / 日本語**
+1台を囲んで遊ぶピックルボールのミニゲーム集。レベルは1人ずつ選べるので、親子でも勝負になります。
+
+### [Soft Tennis IQ](https://omicreate.github.io/softtennis-iq/) ・ ソフトテニスIQ
+
+<a href="https://omicreate.github.io/softtennis-iq/"><img src="https://omicreate.github.io/softtennis-iq/ogp.png" alt="Soft Tennis IQ" width="480"></a>
+
+Rule drills, a formation board and a match notebook for soft tennis players. **日本語**
+ルールドリル・陣形ラボ・試合ノートを1つにまとめた、選手向けのアプリ。
+
+### [Hawkeye-sensei to Asobo](https://omicreate.github.io/softtennis-asobi/) ・ ホークアイ先生とあそぼ
+
+<a href="https://omicreate.github.io/softtennis-asobi/"><img src="https://omicreate.github.io/softtennis-asobi/ogp.png" alt="Hawkeye-sensei to Asobo" width="480"></a>
+
+The soft tennis version of the party games. **日本語**
+ミニゲーム集のソフトテニス版。
 
 > **What is soft tennis?** A racket sport played with a soft rubber ball, born in Japan and popular across East Asia.
 > ソフトテニスは、柔らかいゴムボールを使う日本生まれのラケット競技です。
