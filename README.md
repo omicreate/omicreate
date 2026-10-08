@@ -1,28 +1,59 @@
 # omicreate
 
-小さくて役に立つツールを、AIエージェントと一緒に作っています。
-企画からコード・動画制作までの過程は、リポジトリとコミットログにそのまま残しています。
+**Free web apps for racket sports — no install, no sign-up, works offline.**
+Made by a solo developer in Japan, together with AI agents.
 
-*Solo developer in Japan, building small useful tools together with AI agents — from planning to code.*
+ソフトテニスとピックルボールの無料Webアプリを、AIエージェントと一緒に個人で作っています。インストールも登録も不要で、オフラインでも動きます。
 
-## 公開中のプロダクト
+[Website](https://omicreate.github.io/) ・ [Instagram: Soft Tennis IQ](https://www.instagram.com/softtennis_iq/) ・ [Instagram: Pickleball IQ](https://www.instagram.com/pickleballiq_jp/)
 
-### アプリ（無料・インストール不要の PWA）
+## Apps / アプリ
 
-| プロダクト | なにができるか | リンク |
-|---|---|---|
-| ソフトテニスIQ アプリ | ルールドリル・陣形ラボ・試合ノートをひとつにまとめた無料アプリ | https://omicreate.github.io/softtennis-iq/ |
-| ピクルくんとあそぼ | スマホ・タブレット1台を囲んで、親子・なかまで遊ぶピックルボールのミニゲーム集（日本語・English） | https://omicreate.github.io/pickle-asobi/ |
-| ホークアイ先生とあそぼ | 1台を囲んで遊ぶ、ソフトテニスのミニゲーム集 | https://omicreate.github.io/softtennis-asobi/ |
+<table>
+<tr>
+<td width="33%" valign="top">
+<a href="https://omicreate.github.io/pickle-asobi/?lang=en"><img src="https://omicreate.github.io/pickle-asobi/ogp.png" alt="Play with Pikuru"></a>
+<br><b><a href="https://omicreate.github.io/pickle-asobi/?lang=en">Play with Pikuru</a></b><br>
+<sub>ピクルくんとあそぼ ・ English / 日本語</sub>
+<br>Pickleball party games for one phone or tablet. Two players face each other across the screen, and each picks their own level — so kids and adults can play together.
+<br><sub>1台を囲んで遊ぶピックルボールのミニゲーム集。レベルは1人ずつ選べるので、親子でも勝負になります。</sub>
+</td>
+<td width="33%" valign="top">
+<a href="https://omicreate.github.io/softtennis-iq/"><img src="https://omicreate.github.io/softtennis-iq/ogp.png" alt="Soft Tennis IQ"></a>
+<br><b><a href="https://omicreate.github.io/softtennis-iq/">Soft Tennis IQ</a></b><br>
+<sub>ソフトテニスIQ ・ 日本語</sub>
+<br>Rule drills, a formation board and a match notebook for soft tennis players.
+<br><sub>ルールドリル・陣形ラボ・試合ノートを1つにまとめた、選手向けのアプリ。</sub>
+</td>
+<td width="33%" valign="top">
+<a href="https://omicreate.github.io/softtennis-asobi/"><img src="https://omicreate.github.io/softtennis-asobi/ogp.png" alt="Hawkeye-sensei to Asobo"></a>
+<br><b><a href="https://omicreate.github.io/softtennis-asobi/">Hawkeye-sensei to Asobo</a></b><br>
+<sub>ホークアイ先生とあそぼ ・ 日本語</sub>
+<br>The soft tennis version of the party games.
+<br><sub>ミニゲーム集のソフトテニス版。</sub>
+</td>
+</tr>
+</table>
 
-### SNS（3択クイズのショート動画）
+> **What is soft tennis?** A racket sport played with a soft rubber ball, born in Japan and popular across East Asia.
+> ソフトテニスは、柔らかいゴムボールを使う日本生まれのラケット競技です。
 
-| アカウント | 中身 | リンク |
-|---|---|---|
-| ソフトテニスIQ | 「試合脳」を鍛える局面クイズ | Instagram / Threads: [@softtennis_iq](https://www.instagram.com/softtennis_iq/) |
-| ピックルボールIQ | ルール・立ち位置・ダブルスの判断を3択で | Instagram / Threads: [@pickleballiq_jp](https://www.instagram.com/pickleballiq_jp/) |
+## Short videos / ショート動画
 
-## 作り方について
+Three-choice quiz videos that train game sense — rules, positioning and doubles tactics. (Japanese)
+試合の判断力を鍛える3択クイズ動画を投稿しています。
 
-- アプリもSNSコンテンツも、AIエージェントとの協働で制作しています
-- 新しいプロダクトができたら、この表に追記していきます
+- **Soft Tennis IQ** — [Instagram](https://www.instagram.com/softtennis_iq/) ・ [Threads](https://www.threads.com/@softtennis_iq)
+- **Pickleball IQ** — [Instagram](https://www.instagram.com/pickleballiq_jp/) ・ [Threads](https://www.threads.com/@pickleballiq_jp)
+
+## How I build / 作り方
+
+- **Stack:** TypeScript ・ React ・ Vite ・ PWA (offline via service worker) ・ Vitest ・ Playwright ・ GitHub Actions → GitHub Pages
+- **Grounded in the official rules.** Rule content is checked against the current official rulebooks; soft tennis questions cite the article they are based on.
+  <br><sub>ルールの内容は最新の公式ルールと照らし合わせ、ソフトテニスの問題には根拠の条番号をつけています。</sub>
+- **Tested before every release.** Each push runs the tests, and the app is published only if they pass.
+  <br><sub>push するたびにテストを回し、通ったときだけ公開します。</sub>
+- **Privacy first.** No login, no ads, no cookies. Your records stay in your browser; the apps only send anonymous usage counts.
+  <br><sub>ログイン・広告・Cookie なし。記録は端末の中だけに保存し、送るのは匿名の利用回数だけです。</sub>
+- **Human-led, AI-assisted.** I plan, review and make the final calls; AI agents help write code and produce videos.
+  <br><sub>企画・確認・最終判断は自分で行い、コードや動画づくりをAIエージェントと分担しています。</sub>
