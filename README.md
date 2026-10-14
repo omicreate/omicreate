@@ -21,9 +21,9 @@ Pickleball party games for one phone or tablet. Two players face each other acro
 
 <a href="https://omicreate.github.io/softtennis-iq/"><img src="https://omicreate.github.io/softtennis-iq/ogp.png" alt="Soft Tennis IQ" width="480"></a>
 
-Rule drills, a formation board and a match notebook for soft tennis players. **日本語**
+A daily tactics quiz, rule drills, a formation board and a match notebook for soft tennis players. **日本語**
 
-ルールドリル・陣形ラボ・試合ノートを1つにまとめた、選手向けのアプリ。
+局面クイズ・ルールドリル・陣形ラボ・試合ノートを1つにまとめた、選手向けのアプリ。
 
 ### [Hawkeye-sensei to Asobo](https://omicreate.github.io/softtennis-asobi/) ・ ホークアイ先生とあそぼ
 
