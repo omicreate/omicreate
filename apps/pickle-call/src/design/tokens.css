@@ -1,0 +1,133 @@
+/*
+ * ピックルコールのデザイントークン。静かでミニマル、タイポグラフィ中心。
+ * 屋外で使うので既定は明るい地。暗い地（端末の設定に合わせる）と高コントラストも持つ。
+ * チームの色は A＝藍、B＝橙。色だけに頼らず「サーブ」「レシーブ」「S」の文字を必ず添える。
+ */
+:root {
+  --bg: #fafaf7;
+  --surface: #ffffff;
+  --surface-2: #f1f1ec;
+  --ink: #161616;
+  --mute: #5f5f5f;
+  --line: #d9d9d2;
+  --focus: #1f4e9c;
+
+  --a: #1f4e9c;
+  --a-soft: #e6edf8;
+  --b: #b4410c;
+  --b-soft: #fbece4;
+  --ok: #1d6b3a;
+  --ng: #a1281e;
+
+  --court: #e4ebf2;
+  --court-kitchen: #d4dfeb;
+  --court-line: #ffffff;
+  --court-edge: #9fb1c4;
+
+  --primary-bg: #161616;
+  --primary-ink: #ffffff;
+
+  --ring: 4px;
+
+  --font: system-ui, -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic UI', sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5625rem;
+  --fs-2xl: 1.953rem;
+  --fs-call: clamp(64px, 20vw, 136px);
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 20px;
+  --s6: 24px;
+  --s8: 32px;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  --tap: 48px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --page: 560px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1318;
+    --surface: #171c23;
+    --surface-2: #1e252e;
+    --ink: #f2f4f7;
+    --mute: #a3adba;
+    --line: #2d3540;
+    --focus: #8fb4f2;
+    --a: #8fb4f2;
+    --a-soft: #1b2a40;
+    --b: #f29a6e;
+    --b-soft: #3a2218;
+    --ok: #6fd294;
+    --ng: #ff8a7e;
+    --court: #1b2633;
+    --court-kitchen: #223142;
+    --court-line: #4a5d73;
+    --court-edge: #4a5d73;
+    --primary-bg: #f2f4f7;
+    --primary-ink: #0f1318;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1318;
+  --surface: #171c23;
+  --surface-2: #1e252e;
+  --ink: #f2f4f7;
+  --mute: #a3adba;
+  --line: #2d3540;
+  --focus: #8fb4f2;
+  --a: #8fb4f2;
+  --a-soft: #1b2a40;
+  --b: #f29a6e;
+  --b-soft: #3a2218;
+  --ok: #6fd294;
+  --ng: #ff8a7e;
+  --court: #1b2633;
+  --court-kitchen: #223142;
+  --court-line: #4a5d73;
+  --court-edge: #4a5d73;
+  --primary-bg: #f2f4f7;
+  --primary-ink: #0f1318;
+  color-scheme: dark;
+}
+
+/* 高コントラスト（日差しの下など）。明るい地・暗い地のどちらより優先する */
+:root[data-contrast='high'] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --ink: #000000;
+  --mute: #000000;
+  --line: #000000;
+  --focus: #000000;
+  --a: #0a2a66;
+  --a-soft: #ffffff;
+  --b: #7a2600;
+  --b-soft: #ffffff;
+  --ok: #003d17;
+  --ng: #6b0000;
+  --court: #ffffff;
+  --court-kitchen: #ededed;
+  --court-line: #000000;
+  --court-edge: #000000;
+  --primary-bg: #000000;
+  --primary-ink: #ffffff;
+  --ring: 6px;
+  color-scheme: light;
+}
