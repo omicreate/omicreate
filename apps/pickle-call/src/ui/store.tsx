@@ -1,6 +1,6 @@
 // アプリ全体の状態（設定・進行中のゲーム・履歴・学ぶの進み具合）と操作。
 // ゲームの状態は保存せず、イベント列から毎回作り直す（取り消しが正確になる）。毎操作の直後に保存する。
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { nextGameSetup } from '../domain/engine'
 import { formatCode } from '../domain/format'
@@ -181,8 +181,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const t = useMemo(() => makeT(settings.lang), [settings.lang])
 
-  // 言語・表示の設定を <html> に反映する
-  useEffect(() => {
+  // 言語・表示の設定を <html> に反映する。描く前に当てる（読み込み直後に別の色や言語で一瞬描かれないように）
+  useLayoutEffect(() => {
     const el = document.documentElement
     el.lang = settings.lang
     if (settings.theme === 'auto') el.removeAttribute('data-theme')

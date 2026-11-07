@@ -1,0 +1,50 @@
+# apps/pickle-call（ピックルコール）のテスト。公開はしない（公開は専用リポジトリ omicreate/pickle-call で行う。README 参照）。
+name: pickle-call
+
+on:
+  push:
+    paths:
+      - "apps/pickle-call/**"
+      - ".github/workflows/pickle-call.yml"
+  pull_request:
+    paths:
+      - "apps/pickle-call/**"
+      - ".github/workflows/pickle-call.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pickle-call-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/pickle-call
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/pickle-call/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # 公開前チェック（check:public-info）と単体テスト
+      - run: npm test
+      - run: npm run build
+      - run: npm run test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/pickle-call/playwright-report/
+            apps/pickle-call/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

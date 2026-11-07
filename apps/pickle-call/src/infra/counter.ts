@@ -41,7 +41,8 @@ export function counterUrl(base: string, p: { ev: CounterEvent; game?: string; s
   if (isValidGame(p.game)) q.set('game', p.game)
   if (isValidSrc(p.src)) q.set('src', p.src)
   if (p.pwa !== undefined) q.set('pwa', p.pwa ? '1' : '0')
-  return `${base}?${q.toString()}`
+  // 送信先の URL がすでに ? を含む（クエリつき）ときは & でつなぐ
+  return `${base}${base.includes('?') ? '&' : '?'}${q.toString()}`
 }
 
 export function browserEnv(userOn: boolean): CounterEnv {

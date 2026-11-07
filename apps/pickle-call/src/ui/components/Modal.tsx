@@ -1,5 +1,5 @@
 // 使いやすいモーダル（ネイティブの <dialog>）。開くとフォーカスを中に閉じ込め、Esc で閉じ、閉じたら元の位置へ戻す。
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import './modal.css'
 
@@ -15,6 +15,8 @@ interface Props {
 export function Modal({ open, title, onClose, children, actions }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const opener = useRef<Element | null>(null)
+  // 同じ画面に複数のモーダルがあっても見出しの id が重ならないように
+  const titleId = useId()
 
   useEffect(() => {
     const d = ref.current
@@ -35,7 +37,7 @@ export function Modal({ open, title, onClose, children, actions }: Props) {
     <dialog
       ref={ref}
       className="modal"
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault()
         onClose()
@@ -47,7 +49,7 @@ export function Modal({ open, title, onClose, children, actions }: Props) {
     >
       {open && (
         <div className="modal-box">
-          <h2 id="modal-title" className="modal-title">
+          <h2 id={titleId} className="modal-title">
             {title}
           </h2>
           <div className="modal-body">{children}</div>

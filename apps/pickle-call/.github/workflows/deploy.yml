@@ -1,0 +1,54 @@
+# 専用リポジトリ omicreate/pickle-call に移したときに使う公開の流れ。
+# （omicreate のリポジトリの apps/pickle-call/ に置いてあるあいだは、GitHub はこのファイルを読まないので動きません）
+# main に push すると、テスト（公開前チェック・単体・E2E）とビルドが通ったときだけ GitHub Pages に公開する。
+# 事前に Settings > Pages > Build and deployment の Source を「GitHub Actions」にしておく。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # 匿名の回数の送り先（Settings > Secrets and variables > Actions > Variables）。空なら何も送らない
+      VITE_COUNTER_URL: ${{ vars.VITE_COUNTER_URL }}
+      VITE_PUBLIC_URL: https://omicreate.github.io/pickle-call/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # lock と package.json がずれていたら、公開せずにここで止める
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # 公開前チェック（check:public-info）と単体テスト
+      - run: npm test
+      - run: npm run build
+      # ビルドした版で画面の流れとアクセシビリティを確かめる
+      - run: npm run test:e2e
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

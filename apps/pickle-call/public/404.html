@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ピックルコール</title>
+    <script>
+      // 画面はハッシュ（#/play など）で切り替えるので、見つからないパスはアプリの入口へ戻す。
+      // ?lang= と ?src= と #/... はそのまま引きつぐ。/pickle-call/play のようなパスは #/play に読みかえる。
+      (function () {
+        try {
+          var app = "/pickle-call/";
+          var path = location.pathname;
+          var at = path.indexOf(app);
+          var base = at >= 0 ? path.slice(0, at + app.length) : "./";
+          var rest = at >= 0 ? path.slice(at + app.length) : "";
+          var routes = ["setup", "play", "result", "learn", "guide", "history", "settings"];
+          var first = rest.split("/")[0];
+          var hash = location.hash || (routes.indexOf(first) >= 0 ? "#/" + first : "");
+          var target = new URL(base, location.href);
+          var href = target.pathname + location.search + hash;
+          document.addEventListener("DOMContentLoaded", function () {
+            var link = document.getElementById("open");
+            if (link) link.setAttribute("href", href);
+          });
+          // 行き先が今と同じ場所なら（入口そのものが無いとき）、くり返さないように止まる
+          if (target.pathname === path) return;
+          location.replace(href);
+        } catch (e) {
+          // 下のリンクから開ける
+        }
+      })();
+    </script>
+    <style>
+      :root {
+        --bg: #fafaf7;
+        --ink: #161616;
+        --mute: #5f5f5f;
+        --link: #1f4e9c;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1318;
+          --ink: #eef0f2;
+          --mute: #a9b0b8;
+          --link: #9cbcf0;
+        }
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+        line-height: 1.7;
+      }
+      main {
+        padding: 24px 16px;
+        max-width: 32rem;
+        text-align: center;
+      }
+      p {
+        margin: 0 0 0.5rem;
+      }
+      .en {
+        display: block;
+        color: var(--mute);
+        font-size: 0.875rem;
+        font-weight: 400;
+      }
+      a {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 0.75rem 1.25rem;
+        min-height: 44px;
+        box-sizing: border-box;
+        color: var(--link);
+        font-weight: 700;
+      }
+      a:focus-visible {
+        outline: 3px solid var(--link);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>ページが見つかりませんでした。</p>
+      <p class="en" lang="en">This page could not be found.</p>
+      <a id="open" href="./">ピックルコールを開く<span class="en" lang="en">Open Pickle Call</span></a>
+    </main>
+  </body>
+</html>

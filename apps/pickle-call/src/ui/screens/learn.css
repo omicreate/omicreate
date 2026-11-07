@@ -1,0 +1,425 @@
+/*
+ * 学ぶ（3択）の見た目。静かで、問いに集中できるように。クラス名は ln- で始める。
+ * 正解・不正解は色だけでなく、印（✓／×）と文字（「正解」「あなたの答え」）でも伝える。
+ */
+
+.ln:lang(ja) {
+  line-break: strict;
+}
+/* 短い文は文節で折り返す（対応するブラウザだけ）。長い説明文は普通に折り返す */
+.ln:lang(ja) .ln-situation,
+.ln:lang(ja) .ln-question,
+.ln:lang(ja) .ln-choice-label,
+.ln:lang(ja) .ln-fb-answer,
+.ln:lang(ja) .ln-msg {
+  word-break: auto-phrase;
+}
+
+/* ---------- 見出しと進み具合 ---------- */
+.page-head.ln-head {
+  margin-left: calc(var(--s2) * -1);
+  margin-bottom: var(--s2);
+}
+.ln-progress {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.ln-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--s5);
+}
+.ln-bar > span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.ln-bar > span[data-step='done'] {
+  background: var(--ink);
+}
+.ln-bar > span[data-step='now'] {
+  background: var(--mute);
+}
+
+/* ---------- 場面（コート図と状況） ---------- */
+.ln-stage {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s4);
+  align-items: center;
+}
+.ln-stage-text {
+  display: block;
+  padding: var(--s4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+/* チーム名がコートの上下にはみ出すので、その分の余白を取る */
+.ln-court {
+  padding-block: 1.35rem;
+}
+.ln-court .court-sm {
+  height: min(38vh, 300px);
+  min-height: 230px;
+}
+/* 小さいコートではチップが細いので、印（S・サーブ）は折り返してよい（縦書きのように崩さない） */
+.ln-court .chip {
+  padding: 3px 2px;
+}
+.ln-court .chip-meta {
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 3px;
+  row-gap: 2px;
+}
+.ln-court .chip-role {
+  white-space: nowrap;
+}
+.ln-context {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  min-width: 0;
+}
+.ln-format {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--mute);
+  line-height: 1.5;
+}
+/* 区切りの位置で折り返す。1つの部分が欄より長いとき（英語の狭い画面）だけ、その中でも折り返す */
+.ln-format-part {
+  display: inline-block;
+  max-width: 100%;
+}
+.ln-now {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ln-now-label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--mute);
+}
+.ln-now-call {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+.ln-situation {
+  font-size: var(--fs-md);
+  line-height: 1.6;
+}
+.ln-note {
+  font-size: var(--fs-sm);
+  color: var(--mute);
+  border-left: 3px solid var(--line);
+  padding-left: var(--s3);
+  line-height: 1.6;
+}
+
+/* ---------- 問いと選択肢 ---------- */
+.ln-question {
+  margin-top: var(--s5);
+  margin-bottom: var(--s3);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+.ln-question-long {
+  font-size: var(--fs-lg);
+}
+.ln-question:focus,
+.ln-fb-head:focus,
+.ln-score:focus {
+  outline: none;
+}
+.ln-question:focus-visible,
+.ln-fb-head:focus-visible,
+.ln-score:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.ln-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.ln-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--s3) var(--s4);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  text-align: left;
+  line-height: 1.35;
+  transition:
+    border-color 0.15s var(--ease),
+    transform 0.08s var(--ease);
+}
+.ln-choice:not(:disabled):hover {
+  border-color: var(--ink);
+}
+.ln-choice:not(:disabled):active {
+  transform: scale(0.99);
+}
+.ln-choice:disabled {
+  cursor: default;
+}
+.ln-choice-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+}
+.ln-choice-mark svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 3;
+}
+.ln-choice-label {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ln-choice-call .ln-choice-label {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.ln-choice-tag {
+  flex: none;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+  border: 1.5px solid currentColor;
+  white-space: nowrap;
+}
+.ln-choice[data-state='correct'] {
+  border-color: var(--ok);
+  border-width: 2.5px;
+}
+.ln-choice[data-state='correct'] .ln-choice-mark {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: var(--surface);
+}
+.ln-choice[data-state='correct'] .ln-choice-tag {
+  color: var(--ok);
+}
+.ln-choice[data-state='wrong'] {
+  border-color: var(--ng);
+  border-style: dashed;
+  border-width: 2px;
+}
+.ln-choice[data-state='wrong'] .ln-choice-mark {
+  background: var(--ng);
+  border-color: var(--ng);
+  color: var(--surface);
+}
+.ln-choice[data-state='wrong'] .ln-choice-tag {
+  color: var(--ng);
+}
+.ln-choice[data-state='rest'] {
+  color: var(--mute);
+}
+
+/* ---------- 答えた後 ---------- */
+.ln-feedback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line);
+  scroll-margin: var(--s4);
+}
+.ln-fb-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+.ln-fb-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--surface);
+  background: var(--ok);
+}
+.ln-feedback[data-ok='false'] .ln-fb-icon {
+  background: var(--ng);
+}
+.ln-fb-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 3;
+}
+.ln-fb-answer {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.ln-fb-text {
+  line-height: 1.8;
+}
+.ln-refs {
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.ln-refs-head {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--mute);
+  margin-bottom: var(--s1);
+}
+.ln-refs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--fs-sm);
+}
+.ln-refs-list li {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--s3);
+}
+.ln-ref-no {
+  font-weight: 700;
+  min-width: 3.2em;
+}
+.ln-ref-title {
+  color: var(--mute);
+}
+.ln-next {
+  margin-top: var(--s2);
+}
+
+/* ---------- まとめ ---------- */
+.ln-sum {
+  padding-top: var(--s4);
+}
+.ln-kicker {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+}
+.ln-score {
+  margin-top: var(--s1);
+  font-size: clamp(2.25rem, 11vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+.ln-msg {
+  margin-top: var(--s3);
+  line-height: 1.75;
+}
+.ln-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin-top: var(--s6);
+}
+.ln-review-head {
+  margin-top: var(--s8);
+  margin-bottom: var(--s1);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--mute);
+}
+.ln-review {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ln-review > li {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--s3);
+  align-items: start;
+  padding: var(--s3) 0;
+}
+.ln-review > li + li {
+  border-top: 1px solid var(--line);
+}
+.ln-review-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--ok);
+}
+.ln-review > li[data-ok='false'] .ln-review-mark {
+  color: var(--ng);
+}
+.ln-review-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+}
+.ln-review-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 3;
+}
+.ln-review-body {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.ln-review-ctx {
+  font-size: var(--fs-xs);
+  color: var(--mute);
+}
+.ln-review-a {
+  font-weight: 600;
+}
+
+/* ---------- 広い画面 ---------- */
+@media (min-width: 600px) {
+  .ln-court .court-sm {
+    height: min(40vh, 360px);
+  }
+  .ln-stage {
+    gap: var(--s6);
+  }
+}
+
+/* 高コントラストでは枠を黒く太くする。正解は枠の太さ、不正解は破線と×の印で見分ける */
+:root[data-contrast='high'] .ln-choice {
+  border-width: 2px;
+  border-color: var(--ink);
+}
+:root[data-contrast='high'] .ln-choice[data-state='correct'] {
+  border-width: 4px;
+}

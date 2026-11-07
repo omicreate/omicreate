@@ -23,9 +23,11 @@ interface Props {
   size?: 'md' | 'sm'
   /** サーブとレシーブの印と矢印を出す */
   showRoles?: boolean
+  /** チップの data-testid の頭（同じ画面に2つ目のコート図を置くとき、名前が重ならないように変える） */
+  testIdPrefix?: string
 }
 
-export function Court({ setup, view, flipped = false, size = 'md', showRoles = true }: Props) {
+export function Court({ setup, view, flipped = false, size = 'md', showRoles = true, testIdPrefix = 'chip' }: Props) {
   const { t } = useApp()
   const players = playersOf(setup)
   const top = flipped ? 'A' : 'B'
@@ -84,7 +86,7 @@ export function Court({ setup, view, flipped = false, size = 'md', showRoles = t
           <div
             key={p}
             className={`chip chip-${team.toLowerCase()} chip-${role}`}
-            data-testid={`chip-${p}`}
+            data-testid={`${testIdPrefix}-${p}`}
             data-quadrant={q}
             data-role={role}
             style={{ left: `${c.x}%`, top: `${c.y}%` }}

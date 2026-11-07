@@ -1,8 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+// 共通のスタイルを先に読む（各画面のスタイルが、同じ強さの指定なら共通のものに勝つように）
+import './design/base.css'
 import App from './App'
 import { absorbQuery } from './boot'
-import './design/base.css'
 import { AppProvider } from './ui/store'
 
 absorbQuery()

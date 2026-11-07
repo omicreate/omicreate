@@ -366,11 +366,14 @@ details.fold > .fold-body {
   max-width: calc(100% - 32px);
 }
 
+/* 動きを減らす設定では動かさない。0.01ms のような短い時間にすると、すべての値の変化が「遷移」になり、
+   次の描画まで古い色が残る（表示の切り替え直後に読みにくい色が一瞬出る）ので、0 にする */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    scroll-behavior: auto !important;
   }
 }

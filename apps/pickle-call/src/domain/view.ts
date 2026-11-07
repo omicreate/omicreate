@@ -38,7 +38,8 @@ export function explainKeyOf(prev: GameState | null, next: GameState, setup: Set
   if (!prev || !lastEvent) return startKey(kind, scoring)
   if (lastEvent.type === 'set') return 'manual'
   if (next.winner && !prev.winner) return 'game'
-  if (prev === next) return 'game' // 勝者が決まった後のラリー（無視された）
+  // 勝者が決まった後のラリー（無視された）。viewFromEvents は prev と next を別々に作り直すので、参照ではなく勝者で見る
+  if (prev.winner) return 'game'
   const sameTeam = prev.servingTeam === next.servingTeam
   if (scoring === 'rally') {
     if (kind === 'singles') return sameTeam ? 'rally-point-singles' : 'rally-side-out-singles'
@@ -78,6 +79,11 @@ export function deriveView(prev: GameState | null, next: GameState, setup: Setup
 export function viewFromEvents(setup: Setup, events: readonly GameEvent[]) {
   const next = replay(setup, events)
   const prev = events.length ? replay(setup, events.slice(0, -1)) : null
-  return { prev, state: next, view: deriveView(prev, next, setup, events[events.length - 1]) }
+  const view = deriveView(prev, next, setup, events[events.length - 1])
+  // 「開始直後の1人だけのサーブ番」の説明は、手で直したことのあるゲームでは当てはまらない（直した時点で途中の状態になる）
+  if (view.explain.key === 'side-out-start' && events.some((e) => e.type === 'set')) {
+    return { prev, state: next, view: { ...view, explain: { key: 'side-out' as const, refs: RULESET.explainRefs['side-out'] } } }
+  }
+  return { prev, state: next, view }
 }
 

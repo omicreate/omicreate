@@ -1,0 +1,707 @@
+/*
+ * スコア係と結果の画面。
+ * スコア係は画面の高さいっぱいの枠（上部バー／中身／ラリーボタン）にし、ボタンは常に下に置く。
+ * 中身の1画面目（コール・サブ行・状態・コート図・折りたたみの見出し）は高さに合わせ、コート図が残りを使う。
+ */
+
+/* ---- 試合がないとき ---- */
+.play-empty-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin-bottom: var(--s4);
+}
+
+/* ---- 枠 ---- */
+.play {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1100px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.play-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: calc(6px + env(safe-area-inset-top)) max(var(--s2), env(safe-area-inset-right)) var(--s1)
+    max(var(--s2), env(safe-area-inset-left));
+}
+.play-bar-space {
+  flex: 1;
+}
+.play-undo {
+  padding: 0 var(--s3);
+  gap: 6px;
+}
+.play-undo svg {
+  width: 22px;
+  height: 22px;
+}
+.play-undo[disabled] {
+  opacity: 0.35;
+}
+.play-bar .icon-btn[aria-pressed='false'] {
+  color: var(--mute);
+}
+
+.play-main {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 max(var(--s4), env(safe-area-inset-right)) var(--s3) max(var(--s4), env(safe-area-inset-left));
+}
+
+/* 1画面目: 高さいっぱい。コート図が残りの高さを使う */
+.play-stage {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+/* ---- コール・サブ行・状態 ---- */
+.play-head {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  container-type: inline-size;
+}
+.play-notice {
+  font-size: var(--fs-xs);
+  color: var(--mute);
+  line-height: 1.4;
+  margin-bottom: var(--s1);
+}
+.call-block {
+  width: 100%;
+}
+.call {
+  font-size: min(var(--fs-call), 21cqi);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--ink);
+}
+/* 横向きのスマホなど高さが足りないときはコールを小さくする */
+@media (max-height: 500px) {
+  .call {
+    font-size: min(var(--fs-call), 21cqi, 18vh);
+  }
+}
+.call-a {
+  color: var(--a);
+}
+.call-b {
+  color: var(--b);
+}
+.call-done {
+  color: var(--ink);
+}
+.play-sub {
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  color: var(--mute);
+  text-wrap: balance;
+}
+.play-sub strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.play-sub-part {
+  display: inline-block;
+}
+/* 名前の長さで1行と2行が入れ替わってもコート図が伸び縮みしないよう、2行分を取っておく */
+.play-stage .play-sub {
+  min-height: calc(2 * 1.45em);
+}
+.play-status {
+  min-height: 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.play-status .tag {
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+.tag-done {
+  background: var(--primary-bg);
+  color: var(--primary-ink);
+  border-color: var(--primary-bg);
+}
+.tag-end {
+  border-style: dashed;
+}
+
+/* ---- コート図（残りの高さに合わせる） ---- */
+.play-court {
+  flex: 1 0 13.5rem;
+  position: relative;
+}
+.play-court-fit {
+  position: absolute;
+  inset: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* チップの「サーブ」「レシーブ」が狭いコートで1文字ずつ折り返さないように */
+.play-court .chip-role,
+.fix-preview .chip-role {
+  white-space: nowrap;
+}
+.play-court-fit .court {
+  height: 100%;
+  max-height: 600px;
+  margin: 0;
+}
+
+.play-see-result {
+  flex: none;
+}
+
+/* ---- 折りたたみ（見出しは横に2つ並べ、中身はその下に出す） ---- */
+.play-toggles {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+.play-toggle {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  padding: 0 var(--s2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.25;
+}
+.play-toggle[aria-expanded='true'] {
+  background: var(--surface-2);
+  border-color: var(--ink);
+}
+.play-toggle-mark {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--mute);
+  border-bottom: 2px solid var(--mute);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s var(--ease);
+}
+.play-toggle[aria-expanded='true'] .play-toggle-mark {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.play-panels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding-top: var(--s2);
+}
+.play-panels:not(:has(.play-panel:not([hidden]))) {
+  padding-top: 0;
+}
+.play-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: var(--s3) var(--s4) var(--s4);
+  font-size: var(--fs-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  scroll-margin-bottom: var(--s3);
+}
+.play-panel[hidden] {
+  display: none;
+}
+.play-panel-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.play-pos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.play-pos li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  font-weight: 600;
+}
+.play-pos .tag {
+  flex: none;
+}
+.play-refs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-xs);
+  color: var(--mute);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.play-refs li {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: var(--s2);
+}
+.play-refs-title {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--mute);
+  margin-bottom: -4px;
+}
+.play-ref-no {
+  font-weight: 700;
+  color: var(--ink);
+}
+.play-guide-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* ---- ラリーボタン（下に固定） ---- */
+.play-foot {
+  flex: none;
+  padding: var(--s2) max(var(--s3), env(safe-area-inset-right)) calc(var(--s3) + env(safe-area-inset-bottom))
+    max(var(--s3), env(safe-area-inset-left));
+  background: var(--bg);
+}
+.rally {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.rally-btn {
+  position: relative;
+  overflow: hidden;
+  min-height: max(96px, 6.5rem);
+  padding: 18px var(--s2) 10px;
+  border-radius: var(--r-lg);
+  border: 2px solid var(--team);
+  background: var(--team-soft);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition:
+    transform 0.08s var(--ease),
+    background-color 0.12s var(--ease);
+}
+.rally-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: var(--team);
+}
+.rally-a {
+  --team: var(--a);
+  --team-soft: var(--a-soft);
+}
+.rally-b {
+  --team: var(--b);
+  --team-soft: var(--b-soft);
+}
+.rally-label {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--team);
+  text-wrap: balance;
+}
+html:lang(en) .rally-label {
+  font-size: var(--fs-lg);
+}
+.rally-names {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--mute);
+}
+.rally-btn:active {
+  transform: scale(0.98);
+  background: var(--team);
+}
+.rally-btn:active .rally-label,
+.rally-btn:active .rally-names {
+  color: var(--surface);
+}
+.rally-btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.rally-btn:focus-visible {
+  outline-offset: 3px;
+}
+
+/* ---- メニュー ---- */
+.play-menu {
+  margin-top: calc(-1 * var(--s1));
+}
+.play-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--s1);
+  font-weight: 600;
+  text-align: left;
+}
+.play-menu-item svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--mute);
+}
+.play-menu-danger,
+.play-menu-danger svg {
+  color: var(--ng);
+}
+
+/* ---- スコアを直す ---- */
+.fix {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.fix-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+.fix-score-a .field-label {
+  color: var(--a);
+}
+.fix-score-b .field-label {
+  color: var(--b);
+}
+.stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.stepper-btn {
+  min-height: var(--tap);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--surface-2);
+}
+.stepper-btn[disabled] {
+  opacity: 0.35;
+  cursor: default;
+}
+.stepper-btn:focus-visible {
+  outline-offset: -3px;
+}
+.stepper-input {
+  border: 0;
+  border-radius: 0;
+  text-align: center;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  padding: 0 2px;
+  min-width: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.stepper-input::-webkit-outer-spin-button,
+.stepper-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.stepper-input:focus-visible {
+  outline-offset: -3px;
+}
+.fix .seg button {
+  padding: 2px var(--s2);
+  line-height: 1.25;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.fix-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fix-side {
+  font-weight: 500;
+  font-size: var(--fs-xs);
+}
+.fix-starting {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.fix-starting legend {
+  padding: 0;
+  margin-bottom: var(--s2);
+}
+.fix-starting-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s2);
+}
+.fix-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s1);
+  padding: var(--s3);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.fix-preview .field-label {
+  align-self: flex-start;
+}
+.fix-call {
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.fix-sub {
+  color: var(--mute);
+}
+.fix-sub strong {
+  color: var(--ink);
+}
+.fix-ends {
+  font-weight: 700;
+}
+.fix-preview .court {
+  height: min(46vh, 20rem);
+  margin: 1.6rem auto;
+}
+.fix-preview .note {
+  text-align: left;
+  align-self: stretch;
+}
+
+/* ---- 広い画面（タブレットなど）: 左にコート図、右にコールと説明 ---- */
+.play-main-wide {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: var(--s8);
+  overflow: hidden;
+  padding-top: var(--s2);
+  container-type: size;
+}
+.play-main-wide .play-court {
+  height: 100%;
+  width: min(calc((100cqh - 3rem) * 20 / 44), 340px);
+}
+.play-main-wide .play-court-fit {
+  align-items: flex-start;
+}
+.play-main-wide .play-court-fit .court {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+.play-side {
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding-bottom: var(--s4);
+}
+.play-main-wide .play-head {
+  padding-top: var(--s4);
+}
+.play-main-wide .play-panels {
+  padding-top: 0;
+}
+@media (min-width: 720px) and (min-height: 520px) {
+  .rally-btn {
+    min-height: max(96px, 7.5rem);
+  }
+  .rally-label,
+  html:lang(en) .rally-label {
+    font-size: var(--fs-2xl);
+  }
+  .rally-names {
+    font-size: var(--fs-sm);
+  }
+}
+
+/* ---- 結果 ---- */
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+.result-kicker {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 4px;
+  margin: 0;
+}
+.result-kicker {
+  gap: 0 var(--s2);
+}
+.result-kicker .muted {
+  font-weight: 500;
+}
+.result-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s1);
+  text-align: center;
+  padding: var(--s2) 0 0;
+}
+.result-winner {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.result-a .result-winner {
+  color: var(--a);
+}
+.result-b .result-winner {
+  color: var(--b);
+}
+.result-score {
+  font-size: min(7.5rem, 24vw);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: var(--s1);
+}
+.result-vs {
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.result-stats > div {
+  padding: var(--s3) var(--s1);
+  text-align: center;
+}
+.result-stats > div + div {
+  border-left: 1px solid var(--line);
+}
+.result-stats dt {
+  font-size: var(--fs-xs);
+  color: var(--mute);
+  font-weight: 600;
+}
+.result-stats dd {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+.result-row .btn svg {
+  width: 20px;
+  height: 20px;
+}
+.result-next {
+  flex-direction: column;
+  gap: 0;
+  padding-top: var(--s2);
+  padding-bottom: var(--s2);
+}
+.result-next-sub {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  opacity: 0.85;
+}
+.result-note {
+  line-height: 1.5;
+  text-align: center;
+}
+.result-toast-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rally-btn,
+  .play-toggle-mark {
+    transition: none;
+  }
+  .rally-btn:active {
+    transform: none;
+  }
+}

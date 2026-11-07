@@ -34,12 +34,18 @@ export function numberWords(n: number, style: NumStyle): string {
   return EN_TENS[t] + (o ? `-${EN_ONES[o]}` : '')
 }
 
-/** 名前の前後の空白と制御文字を除き、最大10文字にする */
+/**
+ * 名前の前後の空白と制御文字を除き、最大10文字（コードポイント単位）にする。
+ * 除くもの: C0/C1 制御文字、ゼロ幅文字（U+200B〜U+200F）、行・段落区切りと双方向の埋め込み／上書き（U+2028〜U+202E）、
+ * 双方向の分離（U+2066〜U+2069）、アラビア文字の記号（U+061C）、語結合子など（U+2060〜U+2064）、BOM（U+FEFF）。
+ * 正規表現は \u エスケープで書く（見えない双方向文字をソースに直接置かない）。
+ */
 export function cleanName(raw: string | undefined): string {
   if (!raw) return ''
   // eslint-disable-next-line no-control-regex
-  const s = raw.replace(/[\u0000-\u001f\u007f-\u009f​-‏ -‮⁦-⁩]/g, '').trim()
-  return Array.from(s).slice(0, 10).join('')
+  const s = raw.replace(/[\u0000-\u001f\u007f-\u009f\u061c\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g, '').trim()
+  // 10文字で切った後にも空白が端に残らないようにする
+  return Array.from(s).slice(0, 10).join('').trim()
 }
 
 export const teamLabel = (t: Team, lang: Lang) => (lang === 'ja' ? `${t}チーム` : `Team ${t}`)
@@ -85,6 +91,10 @@ export function gameText(state: GameState, setup: Setup, lang: Lang): string {
   const w = state.winner
   const l = w === 'A' ? 'B' : 'A'
   const name = teamName(w, setup, lang)
-  if (lang === 'en') return `Game. ${name} wins, ${state.score[w]} to ${state.score[l]}.`
+  if (lang === 'en') {
+    // 2人の名前（Aoi & Sora）なら複数形の動詞にする
+    const verb = name.includes(' & ') ? 'win' : 'wins'
+    return `Game. ${name} ${verb}, ${state.score[w]} to ${state.score[l]}.`
+  }
   return `ゲーム。${name}の勝ち、${state.score[w]}対${state.score[l]}。`
 }
