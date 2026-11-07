@@ -72,14 +72,16 @@ export const RULESET: Ruleset = {
     '21.B.4': { ja: 'エンドチェンジ後もサーバーは同じ', en: 'No server change after end change' },
     '21.F.2': { ja: 'ゲーム間でエンドとサーブを交代', en: 'Change ends and first serve between games' },
     '21.F.3': { ja: 'ゲーム間のスターティングサーバー変更', en: 'Change of starting server between games' },
-    'CD-2242': { ja: '2026年改訂: ラリー方式はレシーブ側も決勝点を取れる', en: '2026 change: receivers can win the game in rally scoring' },
+    // 番号の側に「2026年の変更点」と出すので、見出しには入れない
+    'CD-2242': { ja: 'ラリー方式はレシーブ側もゲームを決める点を取れる', en: 'Receivers can win the game in rally scoring' },
   },
   endChange: { 11: 6, 15: 8, 21: 11 },
   explainRefs: {
     start: ['5.B', '5.B.2', '6.B.2'],
     'start-singles': ['5.A.1', '6.B.1'],
     'start-rally': ['14.A.3', '14.A.5', '5.B.3'],
-    point: ['4.A', '5.B.3', '5.B.5'],
+    // 得点したのが1人目でも2人目でも同じ（開始直後のサーブ番は2人目。5.B.2）
+    point: ['4.A', '5.B.3', '5.B.5', '5.B.6'],
     'point-singles': ['4.A', '5.A.1', '5.A.2'],
     'second-server': ['5.B.5', '5.B.3'],
     'side-out': ['5.B.6', '5.B.2'],
@@ -99,7 +101,7 @@ export const RULESET: Ruleset = {
     },
     'start-singles': {
       ja: 'シングルスのコールは2つの数字です。最初は「0-0」で、0は偶数なので右からサーブします。',
-      en: 'Singles calls two numbers. The game starts at "0-0"; zero is even, so the serve is from the right.',
+      en: 'A singles call has two numbers. The game starts at "0-0"; zero is even, so the serve is from the right.',
     },
     'start-rally': {
       ja: 'ラリー方式（仮規則）はダブルスでもコールが2つの数字です。サーバーは1人なので、サーバー番号はつけません。',

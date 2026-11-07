@@ -22,21 +22,40 @@ export const href = (name: RouteName, query?: Record<string, string>) => {
   return name === 'home' ? `#/${q}` : `#/${name}${q}`
 }
 
-export function navigate(name: RouteName, query?: Record<string, string>) {
+/**
+ * 画面を移る。replace: true なら履歴を積まずに、いまの画面と置きかえる
+ * （使い終わった画面に「戻る」で戻らないように。例: 結果 → 次のゲーム、設定 → 開始）
+ */
+export function navigate(name: RouteName, query?: Record<string, string>, opts?: { replace?: boolean }) {
   const next = href(name, query)
   if (location.hash === next) return
-  location.hash = next
+  if (opts?.replace) location.replace(next)
+  else location.hash = next
 }
+
+/** ハッシュが変わった（画面を移った）ときだけ立てる。最初の読み込みでは立てない */
+let moved = false
 
 export function useRoute(): Route {
   const [route, setRoute] = useState(() => parseHash(location.hash))
   useEffect(() => {
     const onChange = () => {
+      moved = true
       setRoute(parseHash(location.hash))
       window.scrollTo(0, 0)
     }
     window.addEventListener('hashchange', onChange)
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
+  // 画面を移ったら、新しい画面の見出しへフォーカスを移す（スクリーンリーダーに画面が変わったことを伝える。
+  // 押したボタンが前の画面ごと消え、フォーカスが <body> に落ちたままにならないように）
+  useEffect(() => {
+    if (!moved) return
+    moved = false
+    const h = document.querySelector<HTMLElement>('main h1')
+    if (!h) return
+    h.tabIndex = -1
+    h.focus({ preventScroll: true })
+  }, [route])
   return route
 }

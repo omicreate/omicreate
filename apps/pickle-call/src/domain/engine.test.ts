@@ -1,7 +1,7 @@
 // ゴールデンテスト: 仕様 §9 の期待値表と1文字も違わないこと。
 // 表は USA Pickleball Official Rulebook 2026 の 4.A・5.A・5.B・6.B・14.A をもとに作ったもの。
 import { describe, expect, it } from 'vitest'
-import { applyEvent, initialState, replay } from './engine'
+import { applyEvent, initialState, nextGameSetup, replay } from './engine'
 import type { Format, GameEvent, PlayerId, Setup, Team } from './types'
 import { deriveView, viewFromEvents } from './view'
 
@@ -211,5 +211,33 @@ describe('説明キー', () => {
     const events = ev('A A B B A A B')
     const keys = Array.from({ length: events.length + 1 }, (_, i) => viewFromEvents(setup, events.slice(0, i)).view.explain.key)
     expect(keys).toEqual(['start', 'point', 'point', 'side-out-start', 'point', 'second-server', 'side-out', 'second-server'])
+  })
+})
+
+describe('次のゲーム（nextGameSetup）', () => {
+  it('「スコアを直す」で替えたスターティングサーバーを、次のゲームに引き継ぐ（21.F.2・21.F.3）', () => {
+    const setup = setupOf()
+    // 0-0-2 で B のスターティングサーバーを B2 に直してから、A が11連勝
+    const fix: GameEvent = { type: 'set', score: { A: 0, B: 0 }, servingTeam: 'A', serverNumber: 2, server: 'A1', startingServer: { A: 'A1', B: 'B2' }, at: 0 }
+    const end = replay(setup, [fix, ...ev(Array(11).fill('A').join(' '))])
+    expect(end.winner).toBe('A')
+    const next = nextGameSetup(setup, end.startingServer)
+    expect(next.firstServingTeam).toBe('B')
+    expect(next.startingServer).toEqual({ A: 'A1', B: 'B2' })
+    // 次のゲームは B2 が右から 0-0-2
+    const v = viewFromEvents(next, []).view
+    expect(v.callText).toBe('0-0-2')
+    expect(v.server).toBe('B2')
+    expect(v.serverSide).toBe('right')
+    expect(v.receiver).toBe('A1')
+    // 設定そのものは書き換えない（取り消しのための再計算に使うため）
+    expect(setup.startingServer).toEqual({ A: 'A1', B: 'B1' })
+  })
+
+  it('渡さなければ、またはシングルスなら、設定のスターティングサーバーのまま', () => {
+    const setup = setupOf()
+    expect(nextGameSetup(setup).startingServer).toEqual({ A: 'A1', B: 'B1' })
+    const singles = setupOf({ kind: 'singles' })
+    expect(nextGameSetup(singles, { A: 'A2', B: 'B2' }).startingServer).toEqual({ A: 'A1', B: 'B1' })
   })
 })

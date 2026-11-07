@@ -5,7 +5,8 @@ import type { KeyboardEvent } from 'react'
 import { partner } from '../../domain/engine'
 import { cleanName } from '../../domain/speech-text'
 import type { Format, Kind, PlayerId, Scoring, Setup as GameSetup, Target, Team } from '../../domain/types'
-import { navigate } from '../router'
+import { Modal } from '../components/Modal'
+import { href, navigate } from '../router'
 import { useApp } from '../store'
 import { PageHead } from './Home'
 import './screens.css'
@@ -59,6 +60,7 @@ export function Setup() {
   const [format, setFormat] = useState<Format>(() => (lastSetup ? { ...lastSetup.format } : DEFAULT_FORMAT))
   const [fields, setFields] = useState<NameFields>(() => fieldsFrom(lastSetup))
   const [first, setFirst] = useState<Team>(() => lastSetup?.firstServingTeam ?? 'A')
+  const [confirm, setConfirm] = useState(false)
 
   const doubles = format.kind === 'doubles'
   const startCall = doubles && format.scoring === 'sideout' ? '0-0-2' : '0-0'
@@ -72,7 +74,14 @@ export function Setup() {
     const setup = buildSetup(format, fields, first)
     // iOS: 読み上げとWake Lockはクリックの処理の中で同期的に始める
     actions.startGame(setup)
-    navigate('play')
+    // 設定の画面は履歴に残さない（試合中に「戻る」で設定へ戻り、「開始」で試合を消してしまわないように。戻るとホーム）
+    navigate('play', undefined, { replace: true })
+  }
+
+  // 進行中の試合があるときは、置きかえる前に確かめる（ホームの「前回の設定ではじめる」と同じ）
+  const onStart = () => {
+    if (inProgress) setConfirm(true)
+    else start()
   }
 
   const kinds: [Kind, string][] = [
@@ -210,14 +219,47 @@ export function Setup() {
         </fieldset>
 
         <div className="su-startbar">
-          {inProgress && game && <p className="su-hint su-replace">{t('setup.replaceNote', { call: game.view.callText })}</p>}
-          <button type="button" className="btn btn-primary btn-lg btn-block su-start" data-testid="setup-start" onClick={start}>
+          {inProgress && game && (
+            <p className="su-hint su-replace">
+              {t('setup.replaceNote', { call: game.view.callText })}{' '}
+              <a href={href('play')} data-testid="setup-resume">
+                {t('home.resume')}
+              </a>
+            </p>
+          )}
+          <button type="button" className="btn btn-primary btn-lg btn-block su-start" data-testid="setup-start" onClick={onStart}>
             <span>{t('setup.start')}</span>
             <span className="su-start-sub num">{t('setup.startCall', { call: startCall })}</span>
           </button>
         </div>
         {settings.voice && speechOk && <p className="su-hint su-center su-voice">{t('setup.voiceHint')}</p>}
       </div>
+
+      <Modal
+        open={confirm}
+        title={t('home.replaceTitle')}
+        onClose={() => setConfirm(false)}
+        actions={
+          <>
+            <button type="button" className="btn" onClick={() => setConfirm(false)}>
+              {t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-testid="setup-replace-confirm"
+              onClick={() => {
+                setConfirm(false)
+                start()
+              }}
+            >
+              {t('home.replaceOk')}
+            </button>
+          </>
+        }
+      >
+        <p>{t('setup.replaceNote', { call: game?.view.callText ?? '' })}</p>
+      </Modal>
     </main>
   )
 }

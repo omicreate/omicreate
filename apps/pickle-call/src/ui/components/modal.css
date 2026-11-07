@@ -32,6 +32,14 @@
   gap: var(--s2);
   justify-content: flex-end;
   flex-wrap: wrap;
+  /* 中身が長いモーダル（スコアを直す）でも、保存・やめるが画面の下に見えたままになるように */
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--surface);
+  padding-top: var(--s3);
+  padding-bottom: var(--s5);
+  margin-bottom: calc(-1 * var(--s5));
 }
 .modal-actions .btn {
   flex: 1 1 auto;

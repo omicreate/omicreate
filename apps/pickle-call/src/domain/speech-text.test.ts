@@ -134,7 +134,7 @@ describe('voiceText（スコア係で読み上げる文）', () => {
     const v = view(s, 'A A A A A A')
     expect(v.endChangeNow).toBe(true)
     expect(voiceText(v, s, 'ja', 'kana')).toBe('シックス、ゼロ、ツー。サーバー Aチーム、右から。エンドチェンジの目安です。')
-    expect(voiceText(v, s, 'en', 'kana')).toBe('Six, zero, two. Server Team A, from the right. Time to change ends.')
+    expect(voiceText(v, s, 'en', 'kana')).toBe('Six, zero, two. Server Team A, from the right. End change point.')
   })
 
   it('数字の読み方: ja を選ぶと日本語読み。en を選んでも日本語のときはカタカナ英語。英語のときはいつも英語', () => {
@@ -188,6 +188,15 @@ describe('gameText（ゲーム終了の文）', () => {
     expect(gameText(finished(e, { A: 11, B: 7 }, 'A'), e, 'en')).toBe('Game. Aoi & Sora win, 11 to 7.')
     const sg = setupOf({ kind: 'singles' }, { A1: 'あおい' })
     expect(gameText(finished(sg, { A: 11, B: 3 }, 'A'), sg, 'ja')).toBe('ゲーム。あおいの勝ち、11対3。')
+  })
+
+  it('数字の読み方を渡すと、日本語では最終スコアもコールと同じ読み方にする（英語は数字のまま）', () => {
+    const s = setupOf()
+    const st = finished(s, { A: 11, B: 0 }, 'A')
+    expect(gameText(st, s, 'ja', 'kana')).toBe('ゲーム。Aチームの勝ち、イレブン対ゼロ。')
+    expect(gameText(st, s, 'ja', 'en')).toBe('ゲーム。Aチームの勝ち、イレブン対ゼロ。')
+    expect(gameText(st, s, 'ja', 'ja')).toBe('ゲーム。Aチームの勝ち、じゅういち対ゼロ。')
+    expect(gameText(st, s, 'en', 'kana')).toBe('Game. Team A wins, 11 to 0.')
   })
 
   it('勝者がまだいなければ空文字', () => {

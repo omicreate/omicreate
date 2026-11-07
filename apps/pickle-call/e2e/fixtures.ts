@@ -11,6 +11,7 @@ declare global {
     __spoken: string[]
     __spokenLangs: string[]
     __wakeLockCalls: number
+    __cancelCalls: number
   }
 }
 
@@ -19,6 +20,7 @@ export function stubDevices(opts: { speech: boolean }) {
   window.__spoken = []
   window.__spokenLangs = []
   window.__wakeLockCalls = 0
+  window.__cancelCalls = 0
   if (opts.speech) {
     if (typeof window.SpeechSynthesisUtterance === 'undefined') {
       class Utterance {
@@ -41,7 +43,9 @@ export function stubDevices(opts: { speech: boolean }) {
         window.__spoken.push(u.text)
         window.__spokenLangs.push(u.lang)
       },
-      cancel() {},
+      cancel() {
+        window.__cancelCalls += 1
+      },
       pause() {},
       resume() {},
       getVoices: () => [],
@@ -97,6 +101,7 @@ export const RALLY_GAP_MS = 330
 export const spoken = (page: Page) => page.evaluate(() => window.__spoken.slice())
 export const spokenLangs = (page: Page) => page.evaluate(() => window.__spokenLangs.slice())
 export const wakeLockCalls = (page: Page) => page.evaluate(() => window.__wakeLockCalls)
+export const cancelCalls = (page: Page) => page.evaluate(() => window.__cancelCalls)
 
 export const callOf = (page: Page) => page.getByTestId('call')
 export const chip = (page: Page, id: PlayerId) => page.getByTestId(`chip-${id}`).first()
@@ -114,7 +119,10 @@ export async function startGame(
   if (opts.target) await main.getByRole('button', { name: `${opts.target}点`, exact: true }).click()
   if (opts.first) await main.getByRole('button', { name: `${opts.first}チーム`, exact: true }).click()
   for (const [id, name] of Object.entries(opts.names ?? {})) await page.getByTestId(`name-${id}`).fill(name ?? '')
+  // 進行中の試合があるときは、置きかえる前に確認が出る（その試合を消してよいと答える）
+  const replacing = await page.locator('.su-replace').isVisible()
   await page.getByTestId('setup-start').click()
+  if (replacing) await page.getByTestId('setup-replace-confirm').click()
   await expect(page).toHaveURL(/#\/play$/)
   await expect(callOf(page)).toBeVisible()
 }

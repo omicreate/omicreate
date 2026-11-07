@@ -2,7 +2,7 @@
 // ゲームの状態は保存せず、イベント列から毎回作り直す（取り消しが正確になる）。毎操作の直後に保存する。
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { nextGameSetup } from '../domain/engine'
+import { nextGameSetup, replay } from '../domain/engine'
 import { formatCode } from '../domain/format'
 import { recordAnswer } from '../domain/learn'
 import type { LearnProgress } from '../domain/learn'
@@ -82,12 +82,8 @@ const isTeam = (x: unknown): x is Team => x === 'A' || x === 'B'
 const isPlayer = (x: unknown): x is PlayerId => x === 'A1' || x === 'A2' || x === 'B1' || x === 'B2'
 export function isSetup(x: unknown): x is Setup {
   if (!isObj(x) || !isObj(x.format) || !isObj(x.startingServer) || !isObj(x.names)) return false
-  const f = x.format
   return (
-    (f.kind === 'doubles' || f.kind === 'singles') &&
-    (f.scoring === 'sideout' || f.scoring === 'rally') &&
-    (f.target === 11 || f.target === 15 || f.target === 21) &&
-    (f.winBy === 1 || f.winBy === 2) &&
+    isFormat(x.format) &&
     isPlayer(x.startingServer.A) &&
     isPlayer(x.startingServer.B) &&
     isTeam(x.firstServingTeam) &&
@@ -98,10 +94,18 @@ export function isSetup(x: unknown): x is Setup {
 function isEvent(x: unknown): x is GameEvent {
   if (!isObj(x) || typeof x.at !== 'number') return false
   if (x.type === 'rally') return isTeam(x.winner)
-  if (x.type === 'set') return isObj(x.score) && isTeam(x.servingTeam) && isPlayer(x.server) && isObj(x.startingServer)
+  if (x.type === 'set')
+    return (
+      isObj(x.score) &&
+      isTeam(x.servingTeam) &&
+      isPlayer(x.server) &&
+      isObj(x.startingServer) &&
+      isPlayer(x.startingServer.A) &&
+      isPlayer(x.startingServer.B)
+    )
   return false
 }
-function isCurrent(x: unknown): x is Current {
+export function isCurrent(x: unknown): x is Current {
   return (
     isObj(x) &&
     typeof x.id === 'string' &&
@@ -115,8 +119,33 @@ function isCurrent(x: unknown): x is Current {
 function isSettings(x: unknown): x is Settings {
   return isObj(x) && (x.lang === 'ja' || x.lang === 'en') && typeof x.voice === 'boolean' && typeof x.rate === 'number'
 }
-const isHistory = (x: unknown): x is GameRecord[] =>
-  Array.isArray(x) && x.every((r) => isObj(r) && typeof r.id === 'string' && isTeam(r.winner) && isObj(r.score))
+const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x)
+function isFormat(f: unknown): f is Setup['format'] {
+  return (
+    isObj(f) &&
+    (f.kind === 'doubles' || f.kind === 'singles') &&
+    (f.scoring === 'sideout' || f.scoring === 'rally') &&
+    (f.target === 11 || f.target === 15 || f.target === 21) &&
+    (f.winBy === 1 || f.winBy === 2)
+  )
+}
+/** 履歴の1件。壊れた1件があっても、ほかの記録は捨てない（読み込むときに1件ずつ選り分ける） */
+export function isRecord(r: unknown): r is GameRecord {
+  return (
+    isObj(r) &&
+    typeof r.id === 'string' &&
+    isTeam(r.winner) &&
+    isNum(r.startedAt) &&
+    isNum(r.endedAt) &&
+    isNum(r.rallies) &&
+    isNum(r.sideOuts) &&
+    isObj(r.score) &&
+    isNum(r.score.A) &&
+    isNum(r.score.B) &&
+    isFormat(r.format) &&
+    (r.names === undefined || (isObj(r.names) && Object.values(r.names).every((v) => typeof v === 'string')))
+  )
+}
 const isLearn = (x: unknown): x is LearnProgress => isObj(x) && Object.values(x).every((v) => isObj(v) && typeof v.at === 'number')
 
 interface Ctx {
@@ -165,7 +194,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<Settings>(() => ({ ...defaultSettings(), ...load('settings', defaultSettings(), isSettings) }))
   const [current, setCurrent] = useState<Current | null>(() => load('current', null, (x): x is Current | null => x === null || isCurrent(x)))
   const [lastSetup, setLastSetup] = useState<Setup | null>(() => load('lastSetup', null, (x): x is Setup | null => x === null || isSetup(x)))
-  const [history, setHistory] = useState<GameRecord[]>(() => load('history', [], isHistory))
+  const [history, setHistory] = useState<GameRecord[]>(() => load<unknown[]>('history', [], Array.isArray).filter(isRecord))
   const [learn, setLearn] = useState<LearnProgress>(() => load('learn', {}, isLearn))
 
   const speaker = useMemo(() => createSpeaker(), [])
@@ -189,7 +218,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else el.setAttribute('data-theme', settings.theme)
     if (settings.highContrast) el.setAttribute('data-contrast', 'high')
     else el.removeAttribute('data-contrast')
-    document.title = t('app.name')
+    // ブラウザの上の帯（theme-color）も、アプリで選んだ明るさに合わせる。「端末に合わせる」なら元の media 別の値に戻す
+    const bar = settings.highContrast ? '#ffffff' : settings.theme === 'dark' ? '#0f1318' : settings.theme === 'light' ? '#fafaf7' : null
+    document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
+      m.content = bar ?? (m.media.includes('dark') ? '#0f1318' : '#fafaf7')
+    })
+    // iOS の「ホーム画面に追加」で付く名前も、表示の言語に合わせる
+    document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', t('app.name'))
+    // タブの題名は画面ごとに App が決める
   }, [settings.lang, settings.theme, settings.highContrast, t])
 
   useEffect(() => {
@@ -198,13 +234,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const setSettings = useCallback((patch: Partial<Settings>) => {
-    setSettingsState((s) => {
-      const next = { ...s, ...patch }
-      save('settings', next)
-      return next
-    })
-  }, [])
+  const setSettings = useCallback(
+    (patch: Partial<Settings>) => {
+      // 読み上げをオフにしたら、いま読んでいる文もすぐ止める
+      if (patch.voice === false) speaker.cancel()
+      setSettingsState((s) => {
+        const next = { ...s, ...patch }
+        save('settings', next)
+        return next
+      })
+    },
+    [speaker],
+  )
 
   const speak = useCallback(
     (text: string) => {
@@ -218,7 +259,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const announce = useCallback(
     (cur: Current, game: Game) => {
       const s = settingsRef.current
-      const text = game.state.winner ? gameText(game.state, cur.setup, s.lang) : voiceText(game.view, cur.setup, s.lang, s.numStyle)
+      const text = game.state.winner ? gameText(game.state, cur.setup, s.lang, s.numStyle) : voiceText(game.view, cur.setup, s.lang, s.numStyle)
       speak(text)
     },
     [speak],
@@ -226,6 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   /** 進行中のゲームを書き換え、保存し、履歴と計測をそろえる */
   const commit = useCallback((cur: Current | null) => {
+    const before = currentRef.current
     currentRef.current = cur
     setCurrent(cur)
     save('current', cur)
@@ -246,7 +288,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         sideOuts: game.state.sideOuts,
         rulesetId: cur.setup.rulesetId,
       }
-      hist = upsertRecord(hist, rec)
+      // 決着したところなら残す。すでに決着していたゲームは、記録がまだあるときだけ書き直す
+      // （履歴を消した後に、決着したゲームを直しても記録を生き返らせない）
+      const known = hist.some((r) => r.id === cur.id)
+      const wasOver = !!before && before.id === cur.id && viewFromEvents(before.setup, before.events).state.winner !== null
+      if (known || !wasOver) hist = upsertRecord(hist, rec)
       if (!finishedIds.current.has(cur.id)) {
         finishedIds.current.add(cur.id)
         track(s.counter, 'finish', formatCode(cur.setup.format))
@@ -304,7 +350,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!cur || !cur.events.length) return
         const next: Current = { ...cur, events: cur.events.slice(0, -1) }
         const game = commit(next)
-        if (game) announce(next, game)
+        // エンドチェンジの目安はゲームに1回だけ。取り消しで戻ってきた場面では、もう一度は言わない（表示の印はそのまま）
+        if (game) announce(next, { ...game, view: { ...game.view, endChangeNow: false } })
       },
       fix(input) {
         const cur = currentRef.current
@@ -314,9 +361,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (game) announce(next, game)
       },
       toggleFlip() {
+        // 見た目だけの切り替え。点数も履歴も変えない
         const cur = currentRef.current
         if (!cur) return
-        commit({ ...cur, flipped: !cur.flipped })
+        const next: Current = { ...cur, flipped: !cur.flipped }
+        currentRef.current = next
+        setCurrent(next)
+        save('current', next)
       },
       quit() {
         commit(null)
@@ -326,7 +377,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       nextGame() {
         const cur = currentRef.current
         if (!cur) return
-        begin(nextGameSetup(cur.setup))
+        // 「スコアを直す」で直したスターティングサーバーも引き継ぐ（設定そのものは取り消しの再計算に使うので書き換えない）
+        begin(nextGameSetup(cur.setup, replay(cur.setup, cur.events).startingServer))
       },
       speakAgain() {
         const cur = currentRef.current

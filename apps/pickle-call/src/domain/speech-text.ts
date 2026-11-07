@@ -76,7 +76,7 @@ export function voiceText(view: View, setup: Setup, lang: Lang, numStyle: NumSty
     const pre = view.isSideOut ? 'Side out. ' : key === 'second-server' ? 'Second server. ' : ''
     const n = nums.map((w, i) => (i === 0 ? w[0].toUpperCase() + w.slice(1) : w)).join(', ')
     const side = view.serverSide === 'right' ? 'right' : 'left'
-    const end = view.endChangeNow ? ' Time to change ends.' : ''
+    const end = view.endChangeNow ? ' End change point.' : ''
     return `${pre}${n}. Server ${who}, from the ${side}.${end}`
   }
   const pre = view.isSideOut ? 'サイドアウト。' : key === 'second-server' ? 'セカンドサーバー。' : ''
@@ -85,8 +85,11 @@ export function voiceText(view: View, setup: Setup, lang: Lang, numStyle: NumSty
   return `${pre}${nums.join('、')}。サーバー ${who}、${side}から。${end}`
 }
 
-/** ゲーム終了の読み上げ文 */
-export function gameText(state: GameState, setup: Setup, lang: Lang): string {
+/**
+ * ゲーム終了の読み上げ文。numStyle を渡すと、日本語では最終スコアもコールと同じ読み方にする
+ * （カタカナ英語なら「イレブン対ゼロ」）。渡さなければ数字のまま
+ */
+export function gameText(state: GameState, setup: Setup, lang: Lang, numStyle?: NumStyle): string {
   if (!state.winner) return ''
   const w = state.winner
   const l = w === 'A' ? 'B' : 'A'
@@ -96,5 +99,7 @@ export function gameText(state: GameState, setup: Setup, lang: Lang): string {
     const verb = name.includes(' & ') ? 'win' : 'wins'
     return `Game. ${name} ${verb}, ${state.score[w]} to ${state.score[l]}.`
   }
-  return `ゲーム。${name}の勝ち、${state.score[w]}対${state.score[l]}。`
+  const style: NumStyle | null = numStyle ? (numStyle === 'en' ? 'kana' : numStyle) : null
+  const say = (n: number) => (style ? numberWords(n, style) : String(n))
+  return `ゲーム。${name}の勝ち、${say(state.score[w])}対${say(state.score[l])}。`
 }

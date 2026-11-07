@@ -135,6 +135,37 @@ test.describe('レイアウト', () => {
     })
   })
 
+  test('スコア係（横向きの電話）: コール・コート図・2つのボタンが収まり、コート図が読める大きさ', async ({ page }) => {
+    for (const vp of [
+      { width: 844, height: 390 },
+      { width: 740, height: 360 },
+    ]) {
+      await page.setViewportSize(vp)
+      await seedGame(page, 'AABBA')
+      await gotoFresh(page, './#/play')
+      const label = `landscape ${vp.width}x${vp.height}`
+      await expectPlayFits(page, label)
+      const court = await page.locator('main.play figure.court').first().boundingBox()
+      expect(court!.width, `${label} court width`).toBeGreaterThanOrEqual(100)
+      expect(court!.height, `${label} court height`).toBeGreaterThanOrEqual(220)
+      // コート図はボタンと重ならない
+      const a = await page.getByTestId('rally-A').boundingBox()
+      expect(court!.x + court!.width, `${label} court left of buttons`).toBeLessThanOrEqual(a!.x + 1)
+    }
+  })
+
+  test('スコア係: 折りたたみを開いて下へ送っても、ラリーの後もコールは見えたまま', async ({ page }) => {
+    await seedGame(page, 'AABB')
+    await gotoFresh(page, './#/play')
+    await page.getByRole('button', { name: '立ち位置チェック' }).click()
+    await expect(page.getByRole('region', { name: '立ち位置チェック' })).toBeInViewport()
+    await page.getByTestId('rally-A').click()
+    await page.waitForTimeout(350)
+    await page.getByTestId('rally-B').click()
+    await expect(page.getByTestId('call')).toHaveText('2-2-2')
+    await expectInViewport(page, page.getByTestId('call'), 'call after rallies with panel open')
+  })
+
   test('スコア係: 折りたたみを開くと中身が見える位置まで送り、横スクロールは出ない', async ({ page }) => {
     await seedGame(page, 'AABB')
     await gotoFresh(page, './#/play')

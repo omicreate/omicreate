@@ -1,5 +1,5 @@
 // 言語の切り替えと読み上げ（仕様 §18 の 9・10）、URL の ?lang= と ?src= の取り込み。
-import { callOf, expect, rally, spoken, spokenLangs, startGame, stored, test } from './fixtures'
+import { callOf, cancelCalls, expect, rally, spoken, spokenLangs, startGame, stored, test } from './fixtures'
 
 test.describe('言語', () => {
   test('9. 英語に切り替えると UI・html[lang]・読み上げが英語になる', async ({ page }) => {
@@ -79,8 +79,11 @@ test.describe('読み上げ', () => {
     await rally(page, 'A')
     const n = (await spoken(page)).length
     expect(n).toBe(2)
+    const cancels = await cancelCalls(page)
     await page.getByTestId('voice-toggle').click()
     await expect(page.getByTestId('voice-toggle')).toHaveAttribute('aria-pressed', 'false')
+    // 読んでいる途中の文も、その場で止める
+    expect(await cancelCalls(page)).toBe(cancels + 1)
     await expect(page.getByTestId('say-again')).toBeDisabled()
     await rally(page, 'A')
     await page.getByTestId('undo').click()

@@ -34,11 +34,23 @@ export const SCENES: Scene[] = [
     ask: 'side',
     subject: 'A1',
     question: { ja: '{A1}は次、どちらからサーブする？', en: 'Where does {A1} serve from next?' },
-    refs: ['5.B.3', '5.B.5'],
+    // 0-0-2 のスターティングサーバーは「2人目」（5.B.2）。2人目も得点のたびに左右を替える（5.B.6）
+    refs: ['5.B.3', '5.B.2', '5.B.6'],
   },
   { id: 'start-sideout', seq: ['A', 'B'], ask: 'call', question: { ja: '次のコールは？', en: 'What is the next call?' }, refs: ['5.B', '6.B.2'] },
   { id: 'first-server', seq: ['A', 'B'], ask: 'server', question: { ja: '次にサーブするのは？', en: 'Who serves next?' }, refs: ['5.B.2'] },
-  { id: 'receiver', seq: ['A', 'B', 'B'], ask: 'receiver', question: { ja: '次にレシーブするのは？', en: 'Who receives next?' }, refs: ['5.B.3'] },
+  {
+    id: 'receiver',
+    seq: ['A', 'B', 'B'],
+    ask: 'receiver',
+    question: { ja: '次にレシーブするのは？', en: 'Who receives next?' },
+    // 自動の説明（「レシーブ側は動きません」）だけだと、レシーバーが替わる理由が伝わらないので足す
+    note: {
+      ja: '立ち位置は同じでも、レシーブする人は替わります。レシーバーはいつもサーバーの対角に立つ人です。はるとは左からサーブするので、Aチームで左に立つ人が受けます。Aは1点（奇数）なので、スターティングサーバーのあおいが左です。',
+      en: "Their positions stay the same, but the receiver changes: the receiver is always diagonally opposite the server. Ken now serves from the left, so Team A's left-side player receives. Team A has 1 point (odd), so its starting server Ava is on the left.",
+    },
+    refs: ['5.B.3'],
+  },
   { id: 'second-server', seq: ['A', 'B', 'B', 'A'], ask: 'call', question: { ja: '次のコールは？', en: 'What is the next call?' }, refs: ['5.B.5'] },
   {
     id: 'even-right',
@@ -84,8 +96,8 @@ export const SCENES: Scene[] = [
     ask: 'endchange',
     question: { ja: '11点のゲームで、エンドを替える目安は？', en: 'In a game to 11, when do players change ends?' },
     note: {
-      ja: '大会の1ゲームマッチや決勝ゲームでの決まりです。練習では目安として使ってください。サーバーは替わりません。',
-      en: 'This is a tournament rule for single games and tie-breakers; treat it as a guide in casual play. The server does not change.',
+      ja: '大会の1ゲームマッチや最終ゲームでの決まりです。練習では目安として使ってください。サーバーは替わりません。',
+      en: 'This is a tournament rule for one-game matches and deciding games; treat it as a guide in casual play. The server does not change.',
     },
     refs: ['21.B.1', '21.B.4'],
   },

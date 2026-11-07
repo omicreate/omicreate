@@ -71,7 +71,7 @@ const en: Record<keyof typeof ja, string> = {
   'common.points': '{n} points',
   'common.ruleRef': 'Rule {refs}',
   'common.checkedAt': 'Checked against the {title} ({date})',
-  'common.voiceUnsupported': 'Speech is not available on this device. You can keep going with the screen.',
+  'common.voiceUnsupported': 'Speech is not available on this device. You can still follow the game on screen.',
   'court.label': 'Court diagram. {top} at the top, {bottom} at the bottom.',
   'court.net': 'Net',
   'court.kitchen': 'Kitchen',

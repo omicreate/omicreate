@@ -15,13 +15,17 @@
           var app = "/pickle-call/";
           var path = location.pathname;
           var at = path.indexOf(app);
-          var base = at >= 0 ? path.slice(0, at + app.length) : "./";
+          // 先頭の「//」は1つにまとめる（//x//other.example/pickle-call/ のようなパスで、別のサイトへ飛ばないように）
+          var base = at >= 0 ? path.slice(0, at + app.length).replace(/^\/+/, "/") : "./";
           var rest = at >= 0 ? path.slice(at + app.length) : "";
           var routes = ["setup", "play", "result", "learn", "guide", "history", "settings"];
           var first = rest.split("/")[0];
-          var hash = location.hash || (routes.indexOf(first) >= 0 ? "#/" + first : "");
+          // /pickle-call/learn?scene=x は #/learn?scene=x に読みかえる（画面のクエリはハッシュの中で読むため）
+          var inHash = !location.hash && routes.indexOf(first) >= 0;
+          var hash = inHash ? "#/" + first + location.search : location.hash;
           var target = new URL(base, location.href);
-          var href = target.pathname + location.search + hash;
+          // 念のため、行き先の先頭に続く「/」や「\」も1つの「/」にする（プロトコル相対の URL にしない）
+          var href = (target.pathname + (inHash ? "" : location.search) + hash).replace(/^[\/\\]+/, "/");
           document.addEventListener("DOMContentLoaded", function () {
             var link = document.getElementById("open");
             if (link) link.setAttribute("href", href);

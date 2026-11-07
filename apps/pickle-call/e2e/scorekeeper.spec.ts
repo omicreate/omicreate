@@ -6,9 +6,11 @@ import {
   expect,
   expectQuadrant,
   expectRole,
+  gotoFresh,
   quadrantOf,
   rallies,
   rally,
+  seedGame,
   spoken,
   startGame,
   stored,
@@ -152,7 +154,8 @@ test.describe('スコア係', () => {
     await expect(page.getByTestId('result-rallies')).toHaveText('11')
     await expect(page.getByTestId('result-sideouts')).toHaveText('0')
     const s = await spoken(page)
-    expect(s[s.length - 1]).toMatch(/^ゲーム。Aチームの勝ち、11対0/)
+    // 最終スコアもコールと同じ読み方（既定はカタカナ英語）
+    expect(s[s.length - 1]).toBe('ゲーム。Aチームの勝ち、イレブン対ゼロ。')
 
     const hist = await stored<unknown[]>(page, 'history')
     expect(hist).toHaveLength(1)
@@ -296,5 +299,143 @@ test.describe('スコア係', () => {
     await expect(page).toHaveURL(/#\/$/)
     await expect(page.getByRole('link', { name: /続きから/ })).toHaveCount(0)
     expect(await stored(page, 'current')).toBeNull()
+  })
+
+  test('スコアを直す: 0-0-2 でサーブ側のスターティングサーバーを替えると、新しいスターティングサーバーが右からサーブし、S の印も移る（5.B・5.B.3）', async ({ page }) => {
+    await startGame(page, { names: { A1: 'あおい', A2: 'そら', B1: 'りく', B2: 'はな' } })
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-fix').click()
+    await page.getByTestId('fix-starting-A2').click()
+    // サーバーも一緒に替わり、右からのサーブのまま
+    await expect(page.getByTestId('fix-server-A2')).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByTestId('fix-preview-call')).toHaveText('0-0-2')
+    await expect(page.locator('.fix-sub')).toContainText('そら（右から）')
+    await expect(page.getByTestId('fix-chip-A2').locator('.chip-s')).toHaveCount(1)
+    await expect(page.getByTestId('fix-chip-A1').locator('.chip-s')).toHaveCount(0)
+    await page.getByTestId('fix-save').click()
+    await expect(page.locator('dialog[open]')).toHaveCount(0)
+
+    await expect(callOf(page)).toHaveText('0-0-2')
+    await expectRole(page, 'A2', 'server')
+    await expectQuadrant(page, 'A2', 'BR')
+    await expectRole(page, 'B1', 'receiver')
+    await expect(chip(page, 'A2').locator('.chip-s')).toHaveCount(1)
+    await expect(chip(page, 'A1').locator('.chip-s')).toHaveCount(0)
+    const s = await spoken(page)
+    expect(s[s.length - 1]).toBe('ゼロ、ゼロ、ツー。サーバー そら、右から。')
+    // 得点すると、同じサーバー（そら）が左へ
+    await rally(page, 'A')
+    await expect(callOf(page)).toHaveText('1-0-2')
+    await expectRole(page, 'A2', 'server')
+    await expectQuadrant(page, 'A2', 'BL')
+  })
+
+  test('次のゲームは、「スコアを直す」で替えたスターティングサーバーを引き継ぐ', async ({ page }) => {
+    await startGame(page)
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-fix').click()
+    await page.getByTestId('fix-score-A').fill('10')
+    await page.getByTestId('fix-starting-B2').click()
+    await page.getByTestId('fix-save').click()
+    await expect(callOf(page)).toHaveText('10-0-2')
+    await expect(chip(page, 'B2').locator('.chip-s')).toHaveCount(1)
+    await page.getByTestId('rally-A').click()
+    await expect(page).toHaveURL(/#\/result$/)
+    await page.getByTestId('next-game').click()
+    await expect(callOf(page)).toHaveText('0-0-2')
+    await expect(callOf(page)).toHaveAttribute('data-serving', 'B')
+    await expectRole(page, 'B2', 'server')
+    await expectQuadrant(page, 'B2', 'TL')
+    await expectRole(page, 'A1', 'receiver')
+    await expect(chip(page, 'B2').locator('.chip-s')).toHaveCount(1)
+    expect((await stored<{ setup: { startingServer: unknown } }>(page, 'current'))?.setup.startingServer).toEqual({ A: 'A1', B: 'B2' })
+  })
+
+  test('戻る: 結果から「次のゲーム」へ進んだ後も、戻るボタンでスコア係から出られる', async ({ page }) => {
+    await page.goto('./#/')
+    await page.getByRole('link', { name: '試合をはじめる' }).click()
+    await expect(page).toHaveURL(/#\/setup$/)
+    await page.getByTestId('setup-start').click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-fix').click()
+    await page.getByTestId('fix-score-A').fill('10')
+    await page.getByTestId('fix-save').click()
+    await page.getByTestId('rally-A').click()
+    await expect(page).toHaveURL(/#\/result$/)
+    await page.getByTestId('next-game').click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await expect(callOf(page)).toHaveText('0-0-2')
+    // 戻るを何回か押すと、ホームに着く（スコア係に閉じ込められない）
+    for (let i = 0; i < 3 && !/#\/$/.test(page.url()); i += 1) {
+      await page.goBack()
+      await page.waitForTimeout(200)
+    }
+    await expect(page).toHaveURL(/#\/$/)
+    await expect(page.getByRole('link', { name: /続きから/ })).toBeVisible()
+  })
+
+  test('試合中に戻るとホームへ。設定の画面から「開始」しても、確認なしでは進行中の試合を消さない', async ({ page }) => {
+    await page.goto('./#/')
+    await page.getByRole('link', { name: '試合をはじめる' }).click()
+    await page.getByTestId('setup-start').click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await rallies(page, 'AAB')
+    await expect(callOf(page)).toHaveText('0-2-1')
+    // 設定の画面は履歴に残らないので、戻るとホーム
+    await page.goBack()
+    await expect(page).toHaveURL(/#\/$/)
+    await expect(page.getByRole('link', { name: /続きから/ })).toContainText('0-2-1')
+
+    await page.getByRole('link', { name: '試合をはじめる' }).click()
+    await page.getByTestId('setup-start').click()
+    const dialog = page.locator('dialog[open]')
+    await expect(dialog).toBeVisible()
+    await expect(dialog).toContainText('0-2-1')
+    await dialog.getByRole('button', { name: 'やめる' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(page).toHaveURL(/#\/setup$/)
+    expect((await stored<{ events: unknown[] }>(page, 'current'))?.events).toHaveLength(3)
+    // 「続きから」でスコア係へ
+    await page.getByTestId('setup-resume').click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await expect(callOf(page)).toHaveText('0-2-1')
+  })
+
+  test('エンドチェンジの目安は1回だけ読む（取り消しで戻ってきても、もう一度は言わない）', async ({ page }) => {
+    await startGame(page)
+    await rallies(page, 'AAAAAA')
+    await expect(page.getByTestId('status-endchange')).toBeVisible()
+    let s = await spoken(page)
+    expect(s[s.length - 1]).toContain('エンドチェンジの目安です。')
+    await rally(page, 'A')
+    await page.getByTestId('undo').click()
+    await expect(callOf(page)).toHaveText('6-0-2')
+    s = await spoken(page)
+    expect(s[s.length - 1]).toBe('シックス、ゼロ、ツー。サーバー Aチーム、右から。')
+  })
+
+  test('履歴を消した後、決着したゲームの上下を入れ替えても、記録は戻らない', async ({ page }) => {
+    await seedGame(page, 'AAAAAAAAAAA')
+    await gotoFresh(page, './#/play')
+    await page.getByRole('link', { name: '結果を見る' }).click()
+    await expect(page).toHaveURL(/#\/result$/)
+    // seedGame は履歴を入れないので、ここで決着の記録を作る: 取り消して勝ち直す
+    await page.getByTestId('result-undo').click()
+    await expect(callOf(page)).toHaveText('10-0-2')
+    await page.getByTestId('rally-A').click()
+    await expect(page).toHaveURL(/#\/result$/)
+    expect(await stored<unknown[]>(page, 'history')).toHaveLength(1)
+
+    await page.goto('./#/history')
+    await page.getByRole('button', { name: 'すべて削除' }).click()
+    await page.locator('dialog[open]').getByRole('button', { name: 'すべて削除' }).click()
+    expect(await stored<unknown[]>(page, 'history')).toEqual([])
+
+    await page.goto('./#/play')
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-flip').click()
+    expect(await stored<{ flipped: boolean }>(page, 'current').then((c) => c?.flipped)).toBe(true)
+    expect(await stored<unknown[]>(page, 'history')).toEqual([])
   })
 })

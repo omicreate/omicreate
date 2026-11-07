@@ -184,6 +184,7 @@ export function Settings() {
         <SwitchRow
           id="st-voice-on"
           label={t('settings.voice')}
+          hint={t('settings.voiceHint')}
           checked={settings.voice}
           disabled={!speechOk}
           onChange={(v) => setSettings({ voice: v })}

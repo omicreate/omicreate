@@ -187,6 +187,23 @@ describe('仕様 §8.7 の名前つきの正解', () => {
     expect(buildScene(sceneById('receiver')!, 'en', 0).answerLabel).toBe('Ava')
   })
 
+  it('receiver の解説は、対角の考え方と、エンジンが出すサーバー・側・正解の名前を言う（レシーブ側が動かないことだけで終わらない）', () => {
+    const scene = sceneById('receiver')!
+    for (const lang of ['ja', 'en'] as const) {
+      const built = buildScene(scene, lang, 0)
+      const after = deriveView(built.before, built.after, built.setup)
+      // エンジンの答え: B1 が左からサーブし、A の左に立つ A1 が受ける
+      expect(after.server).toBe('B1')
+      expect(after.serverSide).toBe('left')
+      expect(after.receiver).toBe('A1')
+      expect(after.positions.A1).toBe('left')
+      expect(built.explanation).toContain(LEARN_NAMES[lang].B1)
+      expect(built.explanation).toContain(LEARN_NAMES[lang].A1)
+      expect(built.explanation).toContain(lang === 'ja' ? '対角' : 'diagonally')
+      expect(built.explanation).toContain(lang === 'ja' ? '左からサーブ' : 'from the left')
+    }
+  })
+
   it('rally-win は「Bチームの勝ち（ゲーム終了）」、end-change は「先に6点」', () => {
     expect(buildScene(sceneById('rally-win')!, 'ja', 0).answerLabel).toBe('Bチームの勝ち（ゲーム終了）')
     expect(buildScene(sceneById('rally-win')!, 'en', 0).answerLabel).toBe('Team B wins the game')

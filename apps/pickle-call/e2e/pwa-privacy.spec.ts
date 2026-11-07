@@ -92,3 +92,18 @@ test.describe('外への通信', () => {
     expect(await page.evaluate(() => navigator.doNotTrack)).toBe('1')
   })
 })
+
+test.describe('ホーム画面に追加したときの見た目', () => {
+  test('アプリで選んだ明るさに theme-color を合わせ、英語ではホーム画面の名前も英語にする', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('./#/settings')
+    const colors = () => page.locator('meta[name="theme-color"]').evaluateAll((ms) => ms.map((m) => (m as HTMLMetaElement).content))
+    expect(await colors()).toEqual(['#fafaf7', '#0f1318'])
+    await page.getByRole('button', { name: '暗い', exact: true }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+    expect(await colors()).toEqual(['#0f1318', '#0f1318'])
+    await page.getByRole('button', { name: 'English', exact: true }).click()
+    await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute('content', 'Pickle Call')
+  })
+})
+

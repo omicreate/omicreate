@@ -84,7 +84,7 @@ export function track(userOn: boolean, ev: CounterEvent, game?: string): void {
       openSent = true
     }
     const url = counterUrl(env.counterUrl, { ev, game, src: srcOf(), pwa: ev === 'open' ? isStandalone() : undefined })
-    if (navigator.sendBeacon?.(url)) return
+    // sendBeacon は使わない（仕様上 Cookie を付けて POST するため）。GET・no-cors・Cookie なし・リファラーなしで送る
     void fetch(url, { mode: 'no-cors', credentials: 'omit', keepalive: true, referrerPolicy: 'no-referrer' }).catch(() => {})
   } catch {
     // 計測が失敗してもアプリ本体は止めない

@@ -161,8 +161,8 @@ describe('定数', () => {
 })
 
 describe('browserEnv と track（送り方）', () => {
-  function stubBrowser(opts: { hostname?: string; dnt?: string | null; gpc?: boolean; beacon?: () => boolean; src?: string | null } = {}) {
-    const sendBeacon = vi.fn((_url: string) => (opts.beacon ? opts.beacon() : true))
+  function stubBrowser(opts: { hostname?: string; dnt?: string | null; gpc?: boolean; src?: string | null } = {}) {
+    const sendBeacon = vi.fn((_url: string) => true)
     const fetchMock = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve(new Response(null)))
     vi.stubGlobal('navigator', { sendBeacon, doNotTrack: opts.dnt ?? null, globalPrivacyControl: opts.gpc })
     vi.stubGlobal('location', { hostname: opts.hostname ?? 'omicreate.github.io' })
@@ -197,30 +197,29 @@ describe('browserEnv と track（送り方）', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('on のとき sendBeacon で送る。open は1回だけで pwa つき、src は sessionStorage から', async () => {
+  it('on のとき fetch（GET・no-cors・Cookie なし・リファラーなし）で送る。sendBeacon は使わない。open は1回だけで pwa つき、src は sessionStorage から', async () => {
     const m = await configured()
     const { sendBeacon, fetchMock } = stubBrowser({ src: 'qr1' })
     expect(m.counterStatus(m.browserEnv(true))).toBe('on')
     m.track(true, 'open')
     m.track(true, 'open')
-    expect(sendBeacon).toHaveBeenCalledTimes(1)
-    const open = new URL(sendBeacon.mock.calls[0][0])
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const open = new URL(fetchMock.mock.calls[0][0])
     expect(`${open.origin}${open.pathname}`).toBe(BASE)
     expect(Object.fromEntries(open.searchParams)).toEqual({ app: 'pickle-call', ev: 'open', v: APP_VERSION, src: 'qr1', pwa: '0' })
     m.track(true, 'start', 'd-so-11')
-    const start = new URL(sendBeacon.mock.calls[1][0])
+    const start = new URL(fetchMock.mock.calls[1][0])
     expect(Object.fromEntries(start.searchParams)).toEqual({ app: 'pickle-call', ev: 'start', v: APP_VERSION, game: 'd-so-11', src: 'qr1' })
-    expect(fetchMock).not.toHaveBeenCalled()
-  })
-
-  it('sendBeacon が使えなければ fetch（no-cors・Cookie なし・リファラーなし）', async () => {
-    const m = await configured()
-    const { fetchMock } = stubBrowser({ beacon: () => false })
     m.track(true, 'finish', 'learn')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    const [url, init] = fetchMock.mock.calls[0]
-    expect(new URL(url).searchParams.get('game')).toBe('learn')
-    expect(init).toMatchObject({ mode: 'no-cors', credentials: 'omit', keepalive: true, referrerPolicy: 'no-referrer' })
+    expect(new URL(fetchMock.mock.calls[2][0]).searchParams.get('game')).toBe('learn')
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    for (const [, init] of fetchMock.mock.calls) {
+      expect(init).toMatchObject({ mode: 'no-cors', credentials: 'omit', keepalive: true, referrerPolicy: 'no-referrer' })
+      // 既定の GET のまま（POST にしない）
+      expect(init?.method ?? 'GET').toBe('GET')
+    }
+    // sendBeacon は Cookie を付けて送るので使わない
+    expect(sendBeacon).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -239,15 +238,14 @@ describe('browserEnv と track（送り方）', () => {
 
   it('送るのに失敗してもアプリは止めない（例外を外に出さない）', async () => {
     const m = await configured()
-    stubBrowser({
-      beacon: () => {
-        throw new Error('blocked')
-      },
+    const { fetchMock } = stubBrowser()
+    fetchMock.mockImplementationOnce(() => {
+      throw new Error('blocked')
     })
     expect(() => m.track(true, 'start', 'd-so-11')).not.toThrow()
-    const { fetchMock } = stubBrowser({ beacon: () => false })
-    fetchMock.mockImplementation(() => Promise.reject(new Error('offline')))
+    fetchMock.mockImplementationOnce(() => Promise.reject(new Error('offline')))
     expect(() => m.track(true, 'finish', 'd-so-11')).not.toThrow()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     await Promise.resolve()
   })
 })

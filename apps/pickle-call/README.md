@@ -56,7 +56,7 @@ Tap the team that won the rally. The app shows and speaks the next score call (e
   - 送る項目: アプリ名（`pickle-call`）、できごと（開いた `open`・試合を始めた `start`・ゲームを終えた／学ぶを終えた `finish`・結果を共有した `share`）、アプリの版、形式の短いコード（例: `d-so-11` ＝ダブルス・サイドアウト・11点。学ぶは `learn`、共有は `result`）、リンクについていた流入元の印（`?src=` があったときだけ）、ホーム画面から開いたか（`open` のときだけ）。
   - 送らないもの: 名前、スコア、端末ID、Cookie、位置、言語の設定。
   - ブラウザの「追跡しない」（Do Not Track）か Global Privacy Control がオンのとき、または設定で「匿名の回数を送る」をオフにしたときは送りません。
-  - 送り方は `navigator.sendBeacon`（だめなら `fetch` の no-cors・Cookie なし・リファラーなし）です。失敗しても無視します。送り先は CSP（`connect-src`）で Google Apps Script のドメインだけに限っています。
+  - 送り方は `fetch`（GET・no-cors・Cookie なし・リファラーなし）です。失敗しても無視します。送り先は CSP（`connect-src`）で Google Apps Script のドメインだけに限っています。
   - 送る内容は、アプリの「数え方とルール」の画面にも書いてあります。
 - ブラウザによっては、しばらく開かないと保存した記録が消えることがあります（特に iOS）。ホーム画面に追加すると消えにくくなります。
 

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { rightPlayer } from '../../domain/engine'
-import { displayName, gameText, voiceText } from '../../domain/speech-text'
+import { displayName, gameText, teamName, voiceText } from '../../domain/speech-text'
 import { RULESET } from '../../domain/rules/usap-2026'
 import type { Lang, Setup, Team } from '../../domain/types'
 import { acquireWakeLock, releaseWakeLock } from '../../infra/wakelock'
@@ -22,7 +22,8 @@ import './play.css'
 /** 決着から結果画面へ移るまでの間（ミリ秒） */
 const TO_RESULT_MS = 600
 
-const WIDE_QUERY = '(min-width: 720px) and (min-height: 520px)'
+// 広い画面（タブレット）と、横向きの電話では、コート図を左、コール・ボタンを右に並べる
+const WIDE_QUERY = '(min-width: 720px) and (min-height: 520px), (orientation: landscape) and (min-width: 600px)'
 
 function useMedia(query: string): boolean {
   const get = () => {
@@ -125,7 +126,7 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
     return () => window.clearTimeout(id)
   }, [winner])
 
-  const spoken = winner ? gameText(state, setup, lang) : voiceText(view, setup, lang, settings.numStyle)
+  const spoken = winner ? gameText(state, setup, lang, settings.numStyle) : voiceText(view, setup, lang, settings.numStyle)
   const ds = setup.format.kind === 'doubles' && setup.format.scoring === 'sideout'
   const serverLabel = !ds ? t('play.serverLabel') : view.serverNumber === 1 ? t('play.server1Label') : t('play.server2Label')
   const sideText = view.serverSide === 'right' ? t('common.fromRight') : t('common.fromLeft')
@@ -148,14 +149,26 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
       {!speechOk && <p className="play-notice">{t('common.voiceUnsupported')}</p>}
       <CallDisplay callText={view.callText} spoken={spoken} servingTeam={view.servingTeam} done={!!winner} />
       <p className="play-sub" data-testid="play-sub">
-        <span className="play-sub-part">
-          {serverLabel}: <strong>{displayName(view.server, setup)}</strong>
-          {t('play.paren', { x: sideText })}
-        </span>{' '}
-        <span className="play-sub-part">
-          <span aria-hidden="true">→ </span>
-          {t('play.receiverLabel')}: <strong>{displayName(view.receiver, setup)}</strong>
-        </span>
+        {winner ? (
+          // 決着した後は、もう来ない「次のサーブ」ではなく結果を出す
+          <span className="play-sub-part">
+            <strong>{t('result.winner', { team: teamName(winner, setup, lang) })}</strong>{' '}
+            <span className="num">
+              {state.score[winner]}-{state.score[winner === 'A' ? 'B' : 'A']}
+            </span>
+          </span>
+        ) : (
+          <>
+            <span className="play-sub-part">
+              {serverLabel}: <strong>{displayName(view.server, setup)}</strong>
+              {t('play.paren', { x: sideText })}
+            </span>{' '}
+            <span className="play-sub-part">
+              <span aria-hidden="true">→ </span>
+              {t('play.receiverLabel')}: <strong>{displayName(view.receiver, setup)}</strong>
+            </span>
+          </>
+        )}
       </p>
       <div className="play-status" data-testid="play-status">
         {winner && <span className="tag tag-done">{t('play.gameOver')}</span>}
@@ -181,7 +194,7 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
   const court = (
     <div className="play-court">
       <div className="play-court-fit">
-        <Court setup={setup} view={view} flipped={flipped} />
+        <Court setup={setup} view={view} startingServer={state.startingServer} flipped={flipped} showRoles={!winner} />
       </div>
     </div>
   )
@@ -208,7 +221,7 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
         <p>{RULESET.summaries[view.explain.key][lang]}</p>
         <RuleRefs refs={view.explain.refs} />
         {setup.format.scoring === 'rally' && <p className="note">{t('play.rallyProvisional')}</p>}
-        <a className="play-guide-link small" href={href('guide')}>
+        <a className="play-guide-link small" href={href('guide', { from: 'play' })}>
           {t('play.moreInGuide')}
         </a>
       </div>
@@ -224,7 +237,8 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
           className="btn btn-quiet play-undo"
           data-testid="undo"
           aria-label={t('play.undo')}
-          disabled={!events.length}
+          // disabled にすると、押して最後の1手を戻したときにフォーカスが <body> に落ちる。aria-disabled で押せない印にする
+          aria-disabled={!events.length}
           onClick={() => actions.undo()}
         >
           <IconUndo />
@@ -282,8 +296,8 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
           <div className="play-stage">
             {head}
             {court}
-            {winner && <SeeResult />}
-            {toggles}
+            {/* 決着したら折りたたみの代わりに「結果を見る」を出す（コート図の大きさが変わらないように） */}
+            {winner ? <SeeResult /> : toggles}
           </div>
           {panels}
         </div>
@@ -300,7 +314,9 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
         actions={
           menu === 'quit' ? (
             <>
-              <button type="button" className="btn" onClick={() => setMenu(null)}>
+              {/* メニューの中身が入れ替わってもフォーカスを見失わないよう、確認の「続ける」へ移す
+                  （key を付けて新しいボタンとして作り直す。メニューの「閉じる」のボタンを使い回すと autoFocus が効かない） */}
+              <button key="quit-no" type="button" className="btn" autoFocus onClick={() => setMenu(null)}>
                 {t('play.quitNo')}
               </button>
               <button
@@ -364,7 +380,7 @@ function Scorekeeper({ setup, game }: { setup: Setup; game: Game }) {
                   data-testid="menu-settings"
                   onClick={() => {
                     setMenu(null)
-                    navigate('settings')
+                    navigate('settings', { from: 'play' })
                   }}
                 >
                   <IconGear />

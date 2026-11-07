@@ -1,5 +1,7 @@
 // public/icon.svg と public/icon-maskable.svg から、manifest と iOS 用の PNG を作る（npm run icons）。
 // Playwright の Chromium で SVG を描いて撮る。アイコンを直したときだけ実行し、できた PNG をコミットする。
+// 撮ったままの PNG は圧縮が弱い（事前キャッシュで最初に全部落とすので重い）。コミットの前に、見た目の変わらない
+// 可逆の再圧縮（例: oxipng -o4、または画素を変えずに zlib を最大にして保存し直す）をかけておく。
 //   icon-192.png / icon-512.png            … 角の丸い通常のアイコン（角は透明）
 //   icon-maskable-192.png / -512.png       … 端まで塗った maskable（図柄は中央 80% の安全域に収める）
 //   apple-touch-icon.png（180）            … iOS 用。角は iOS が丸めるので、角を丸めず端まで塗る（透明を残さない）

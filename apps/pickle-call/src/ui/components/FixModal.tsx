@@ -1,7 +1,7 @@
 // 「スコアを直す」モーダル。点数・サーブ側・サーバー番号・サーバー・スターティングサーバーを選ぶ。
 // 立ち位置は手で置かず、点数の偶奇から必ず導く。保存前に、いまの状態へ set を当てた結果を小さなコート図で見せる。
 import { useId, useState } from 'react'
-import { applyEvent, isDoublesSideout, rightPlayer, singlesPlayer, teamOf } from '../../domain/engine'
+import { applyEvent, isDoublesSideout, partner, rightPlayer, singlesPlayer, teamOf } from '../../domain/engine'
 import { displayName, teamLabel } from '../../domain/speech-text'
 import type { GameState, PlayerId, SetEvent, Setup, Team } from '../../domain/types'
 import { deriveView } from '../../domain/view'
@@ -83,6 +83,14 @@ function FixForm({ setup, state, flipped, onClose, onSave }: Omit<Props, 'open'>
     if (doubles && teamOf(server) !== team) setServer(rightPlayer(team, score[team], starting))
   }
 
+  // スターティングサーバーを替えると、そのチームの2人の左右が入れ替わる。
+  // サーブ側なら、サーバーも一緒に入れ替えて「サーブする側（右・左）」とコールを保つ
+  // （0-0-2 なら新しいスターティングサーバーが右からサーブする。5.B・5.B.3）
+  const changeStarting = (team: Team, p: PlayerId) => {
+    if (doubles && team === serving && p !== starting[team]) setServer(partner(effServer))
+    setStarting((s) => ({ ...s, [team]: p }))
+  }
+
   const save = () => {
     onSave(input)
     onClose()
@@ -112,7 +120,8 @@ function FixForm({ setup, state, flipped, onClose, onSave }: Omit<Props, 'open'>
                   type="button"
                   className="stepper-btn"
                   aria-label={t('play.fixDec', { team: label })}
-                  disabled={score[team] <= 0}
+                  // disabled だと、0 になった瞬間にフォーカスがモーダルの外へ落ちる。押しても step() が 0〜99 に丸める
+                  aria-disabled={score[team] <= 0}
                   onClick={() => step(team, -1)}
                 >
                   <span aria-hidden="true">−</span>
@@ -134,7 +143,7 @@ function FixForm({ setup, state, flipped, onClose, onSave }: Omit<Props, 'open'>
                   type="button"
                   className="stepper-btn"
                   aria-label={t('play.fixInc', { team: label })}
-                  disabled={score[team] >= 99}
+                  aria-disabled={score[team] >= 99}
                   onClick={() => step(team, 1)}
                 >
                   <span aria-hidden="true">+</span>
@@ -203,7 +212,8 @@ function FixForm({ setup, state, flipped, onClose, onSave }: Omit<Props, 'open'>
                     key={p}
                     type="button"
                     aria-pressed={starting[team] === p}
-                    onClick={() => setStarting((s) => ({ ...s, [team]: p }))}
+                    data-testid={`fix-starting-${p}`}
+                    onClick={() => changeStarting(team, p)}
                   >
                     <span className="fix-name">{displayName(p, setup)}</span>
                   </button>
@@ -222,13 +232,18 @@ function FixForm({ setup, state, flipped, onClose, onSave }: Omit<Props, 'open'>
           {view.callText}
         </p>
         <p className="fix-sub small">
-          {serverLabel}: <strong>{displayName(view.server, setup)}</strong>
-          {t('play.paren', { x: view.serverSide === 'right' ? t('common.fromRight') : t('common.fromLeft') })}
-          {' → '}
-          {t('play.receiverLabel')}: <strong>{displayName(view.receiver, setup)}</strong>
+          {/* 「→ レシーブ」の途中で折り返さないよう、サーバーとレシーバーをそれぞれひとかたまりにする（スコア係の画面と同じ） */}
+          <span className="play-sub-part">
+            {serverLabel}: <strong>{displayName(view.server, setup)}</strong>
+            {t('play.paren', { x: view.serverSide === 'right' ? t('common.fromRight') : t('common.fromLeft') })}
+          </span>{' '}
+          <span className="play-sub-part">
+            {'→ '}
+            {t('play.receiverLabel')}: <strong>{displayName(view.receiver, setup)}</strong>
+          </span>
         </p>
         {next.winner && <p className="fix-ends small">{t('play.fixEnds')}</p>}
-        <Court setup={setup} view={view} flipped={flipped} size="sm" testIdPrefix="fix-chip" />
+        <Court setup={setup} view={view} startingServer={next.startingServer} flipped={flipped} size="sm" testIdPrefix="fix-chip" />
         <p className="note">{t('play.fixNote')}</p>
       </section>
 

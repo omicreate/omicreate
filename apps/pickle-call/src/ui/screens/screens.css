@@ -44,12 +44,14 @@
 .sc-anat {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(3, auto);
+  /* 文字を大きくしても横にはみ出さないよう、列は画面の幅まで縮める */
+  grid-template-columns: repeat(3, minmax(0, auto));
   justify-content: start;
   column-gap: clamp(1.25rem, 6vw, 2.25rem);
 }
 .sc-anat-col {
   position: relative;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -77,7 +79,10 @@
   font-weight: 600;
   color: var(--mute);
   letter-spacing: 0.04em;
-  white-space: nowrap;
+  /* ふだんは1行。入りきらないとき（文字を大きくしたときなど）だけ折り返す */
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 .sc-anat-md .sc-anat-num {
   font-size: 2.5rem;
@@ -338,6 +343,7 @@
   gap: var(--s3);
 }
 .su-team {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--s3);
@@ -359,9 +365,14 @@
   gap: var(--s2);
   font-weight: 700;
 }
+.su-team .field-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .su-team .input::placeholder {
+  /* 薄くしすぎない（白い地で 4.5:1 以上） */
   color: var(--mute);
-  opacity: 0.75;
+  opacity: 1;
 }
 .su-dot {
   display: inline-block;
@@ -376,6 +387,10 @@
 }
 .su-dot-b {
   background: var(--b);
+}
+/* 下に貼りついた「開始」の帯の裏に、フォーカスした入力欄が隠れないように */
+html:has(.su) {
+  scroll-padding-bottom: 9rem;
 }
 .su-startbar {
   position: sticky;
@@ -766,8 +781,16 @@
   font-weight: 700;
   white-space: nowrap;
 }
+/* 条番号ではなく言葉の見出し（Section 1・2026年の変更点）は、入りきらなければ折り返す */
+.gd-ref-no.gd-ref-text {
+  white-space: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
 .gd-ref-title {
   color: var(--mute);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* 偶数なら右・奇数なら左 */

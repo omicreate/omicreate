@@ -8,18 +8,19 @@ import type { Format, Lang, Setup } from '../../domain/types'
 import type { T } from '../../i18n'
 import { IconBack, IconBook, IconGear, IconList } from '../components/Icons'
 import { Modal } from '../components/Modal'
-import { href, navigate } from '../router'
+import { href, navigate, parseHash } from '../router'
 import { useApp } from '../store'
 import './screens.css'
 
 // ---------- 共有の部品 ----------
 
-/** 画面の見出し（ホームへもどるボタンつき） */
+/** 画面の見出し（ホームへもどるボタンつき。試合中にスコア係から来たときは、スコア係へもどる） */
 export function PageHead({ title, children }: { title: string; children?: ReactNode }) {
-  const { t } = useApp()
+  const { t, game } = useApp()
+  const toPlay = parseHash(location.hash).query.get('from') === 'play' && !!game && !game.state.winner
   return (
     <header className="page-head sc-head">
-      <a className="icon-btn sc-back" href={href('home')} aria-label={t('home.backToHome')}>
+      <a className="icon-btn sc-back" href={href(toPlay ? 'play' : 'home')} aria-label={t(toPlay ? 'home.backToPlay' : 'home.backToHome')}>
         <IconBack />
       </a>
       <h1>{title}</h1>

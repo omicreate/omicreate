@@ -25,9 +25,10 @@ export function Result() {
   const toastTimer = useRef<number | undefined>(undefined)
   const winner = game?.state.winner ?? null
 
-  // 決着していないゲームならスコア係へ戻す
+  // 決着していないゲームならスコア係へ戻す。履歴は積まずに置きかえる（「戻る」でこの画面に来るたびに
+  // スコア係を積み直し、スコア係から先へ戻れなくなるのを防ぐ）
   useEffect(() => {
-    if (current && game && !winner) navigate('play')
+    if (current && game && !winner) navigate('play', undefined, { replace: true })
   }, [current, game, winner])
 
   useEffect(() => () => window.clearTimeout(toastTimer.current), [])
@@ -124,7 +125,7 @@ export function Result() {
             data-testid="next-game"
             onClick={() => {
               actions.nextGame()
-              navigate('play')
+              navigate('play', undefined, { replace: true })
             }}
           >
             <span>{t('result.next')}</span>
@@ -146,7 +147,7 @@ export function Result() {
             data-testid="result-undo"
             onClick={() => {
               actions.undo()
-              navigate('play')
+              navigate('play', undefined, { replace: true })
             }}
           >
             <IconUndo />

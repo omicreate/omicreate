@@ -41,7 +41,8 @@
   width: 22px;
   height: 22px;
 }
-.play-undo[disabled] {
+.play-undo[disabled],
+.play-undo[aria-disabled='true'] {
   opacity: 0.35;
 }
 .play-bar .icon-btn[aria-pressed='false'] {
@@ -122,6 +123,13 @@
 /* 名前の長さで1行と2行が入れ替わってもコート図が伸び縮みしないよう、2行分を取っておく */
 .play-stage .play-sub {
   min-height: calc(2 * 1.45em);
+}
+/* 狭い画面で折りたたみを開いて下へ送っても、コールは上に残す（スコアを見ないままラリーを押さないように） */
+.play-stage .play-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg);
 }
 .play-status {
   min-height: 1.75rem;
@@ -432,7 +440,8 @@ html:lang(en) .rally-label {
   line-height: 1;
   background: var(--surface-2);
 }
-.stepper-btn[disabled] {
+.stepper-btn[disabled],
+.stepper-btn[aria-disabled='true'] {
   opacity: 0.35;
   cursor: default;
 }
@@ -569,6 +578,29 @@ html:lang(en) .rally-label {
 }
 .play-main-wide .play-panels {
   padding-top: 0;
+}
+/* 横向きの電話: 上部バーの下を、左（コート図とコール）と右（縦に並べたラリーボタン）に分ける */
+@media (orientation: landscape) and (max-height: 519px) and (min-width: 600px) {
+  .play {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 30%);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .play-bar {
+    grid-column: 1 / -1;
+  }
+  .play-foot {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    padding-top: 0;
+    padding-left: 0;
+  }
+  .rally {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
+    width: 100%;
+  }
 }
 @media (min-width: 720px) and (min-height: 520px) {
   .rally-btn {

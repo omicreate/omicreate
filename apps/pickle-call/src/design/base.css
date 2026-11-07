@@ -208,7 +208,7 @@ a {
 .seg {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 4px;
   padding: 4px;
   border-radius: var(--r-md);
@@ -216,6 +216,9 @@ a {
   border: 1px solid var(--line);
 }
 .seg button {
+  /* 文字を大きくしても、ボタンの中で折り返して横にはみ出さない */
+  min-width: 0;
+  overflow-wrap: anywhere;
   min-height: 44px;
   border-radius: calc(var(--r-md) - 4px);
   font-weight: 600;
@@ -227,6 +230,11 @@ a {
   color: var(--ink);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
   outline: 1px solid var(--line);
+}
+/* 選ばれている項目にフォーカスが来ても、ふつうのフォーカスの輪を出す（上の 1px の線に負けないように後に書く） */
+.seg button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 /* ---- 入力 ---- */
@@ -243,7 +251,8 @@ a {
   min-height: var(--tap);
   padding: 0 var(--s3);
   border-radius: var(--r-md);
-  border: 1px solid var(--line);
+  /* 入力欄の枠は、白い地の上でも 3:1 以上で見えるように濃くする */
+  border: 1px solid color-mix(in srgb, var(--mute) 70%, var(--surface));
   background: var(--surface);
   font-size: var(--fs-md);
   width: 100%;
@@ -262,6 +271,8 @@ a {
   height: 32px;
   border-radius: var(--r-pill);
   background: var(--line);
+  /* オフのときも形が見えるように、内側に濃い縁を引く */
+  box-shadow: inset 0 0 0 1.5px var(--mute);
   position: relative;
   flex: none;
   cursor: pointer;
@@ -281,9 +292,12 @@ a {
 }
 .switch:checked {
   background: var(--primary-bg);
+  box-shadow: none;
 }
 .switch:checked::after {
   transform: translateX(20px);
+  /* 暗い地ではトラックが明るいので、つまみは地の色にする（明るい地と高コントラストでは白のまま） */
+  background: var(--primary-ink);
 }
 
 /* ---- チップ・印 ---- */

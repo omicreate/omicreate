@@ -89,3 +89,65 @@ for (const scheme of ['light', 'dark'] as const) {
     })
   })
 }
+
+test.describe('フォーカスと題名', () => {
+  test('画面を移ると、新しい画面の見出しにフォーカスが移り、タブの題名も画面の名前になる', async ({ page }) => {
+    await page.goto('./#/')
+    await expect(page).toHaveTitle('ピックルコール')
+    await page.getByRole('link', { name: '試合をはじめる' }).click()
+    await expect(page).toHaveURL(/#\/setup$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+    await expect(page).toHaveTitle('試合の設定 - ピックルコール')
+    await page.getByTestId('setup-start').click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+    await expect(page).toHaveTitle('スコア係 - ピックルコール')
+    // 最後の1手を戻しても、フォーカスは「1手戻す」に残る（<body> に落ちない）
+    await page.getByTestId('rally-A').click()
+    await page.getByTestId('undo').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByTestId('call')).toHaveText('0-0-2')
+    await expect(page.getByTestId('undo')).toBeDisabled()
+    await expect(page.getByTestId('undo')).toBeFocused()
+  })
+
+  test('選ばれているセグメントのボタンにも、はっきりしたフォーカスの輪が出る', async ({ page }) => {
+    await page.goto('./#/setup')
+    const doubles = page.locator('main.su').getByRole('button', { name: 'ダブルス', exact: true })
+    await expect(doubles).toHaveAttribute('aria-pressed', 'true')
+    for (let i = 0; i < 12; i += 1) {
+      await page.keyboard.press('Tab')
+      if (await doubles.evaluate((el) => el === document.activeElement)) break
+    }
+    await expect(doubles).toBeFocused()
+    const outline = await doubles.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return { width: cs.outlineWidth, style: cs.outlineStyle }
+    })
+    expect(outline).toEqual({ width: '3px', style: 'solid' })
+  })
+
+  test('メニューの「試合をやめる」で確認に切り替わると、フォーカスは「続ける」へ移る', async ({ page }) => {
+    await seedGame(page, 'AAB')
+    await gotoFresh(page, './#/play')
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-quit').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('dialog[open]')).toContainText('試合をやめますか？')
+    await expect(page.locator('dialog[open]').getByRole('button', { name: '続ける' })).toBeFocused()
+  })
+
+  test('スコア係から開いた設定の「もどる」は、スコア係へ戻る', async ({ page }) => {
+    await seedGame(page, 'AAB')
+    await gotoFresh(page, './#/play')
+    await page.getByTestId('menu').click()
+    await page.getByTestId('menu-settings').click()
+    await expect(page).toHaveURL(/#\/settings\?from=play$/)
+    const back = page.getByRole('link', { name: 'スコア係にもどる' })
+    await expect(back).toBeVisible()
+    await back.click()
+    await expect(page).toHaveURL(/#\/play$/)
+    await expect(page.getByTestId('call')).toHaveText('0-2-1')
+  })
+})
+

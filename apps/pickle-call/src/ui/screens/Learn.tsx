@@ -293,7 +293,8 @@ function Question({ built, index, total, answer, isLast, onPick, onNext, questio
         })}
       </div>
 
-      <div className="ln-live" aria-live="polite">
+      {/* 答えた後はフォーカスを解説の見出しへ移すので、ここをライブ領域にはしない（同じ内容を2回読ませない） */}
+      <div className="ln-live">
         {answer && (
           <section className="ln-feedback" ref={feedbackBoxRef} data-ok={answer.ok ? 'true' : 'false'} data-testid="learn-feedback">
             <h2 className="ln-fb-head" ref={feedbackRef} tabIndex={-1}>

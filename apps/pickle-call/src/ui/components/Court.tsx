@@ -3,7 +3,7 @@
 import { toQuadrant } from '../../domain/court'
 import { teamOf } from '../../domain/engine'
 import { displayName } from '../../domain/speech-text'
-import type { PlayerId, Quadrant, Setup, View } from '../../domain/types'
+import type { PlayerId, Quadrant, Setup, Team, View } from '../../domain/types'
 import { playersOf } from '../../domain/view'
 import { useApp } from '../store'
 import './court.css'
@@ -25,10 +25,13 @@ interface Props {
   showRoles?: boolean
   /** チップの data-testid の頭（同じ画面に2つ目のコート図を置くとき、名前が重ならないように変える） */
   testIdPrefix?: string
+  /** いまのスターティングサーバー（「スコアを直す」で替えたときはこちら）。省略すると設定のもの */
+  startingServer?: Record<Team, PlayerId>
 }
 
-export function Court({ setup, view, flipped = false, size = 'md', showRoles = true, testIdPrefix = 'chip' }: Props) {
+export function Court({ setup, view, flipped = false, size = 'md', showRoles = true, testIdPrefix = 'chip', startingServer }: Props) {
   const { t } = useApp()
+  const ss = startingServer ?? setup.startingServer
   const players = playersOf(setup)
   const top = flipped ? 'A' : 'B'
   const bottom = flipped ? 'B' : 'A'
@@ -80,7 +83,8 @@ export function Court({ setup, view, flipped = false, size = 'md', showRoles = t
         const c = CENTER[q]
         const team = teamOf(p)
         const role = !showRoles ? 'none' : p === view.server ? 'server' : p === view.receiver ? 'receiver' : 'none'
-        const isStarting = setup.format.kind === 'doubles' && setup.startingServer[team] === p
+        const isStarting = setup.format.kind === 'doubles' && ss[team] === p
+        const side = (view.positions[p] ?? 'right') === 'right' ? t('common.right') : t('common.left')
         const name = displayName(p, setup)
         return (
           <div
@@ -94,11 +98,18 @@ export function Court({ setup, view, flipped = false, size = 'md', showRoles = t
             <span className="chip-name" title={name}>
               {name}
             </span>
+            {/* 支援技術向け: どのチームのどちら側に立つか（図の位置は読み上げられないため） */}
+            <span className="visually-hidden">
+              {t('common.team', { team })} {side}
+            </span>
             <span className="chip-meta">
               {isStarting && (
-                <abbr className="chip-s" title={t('common.startingServer')}>
-                  {t('common.startingServerMark')}
-                </abbr>
+                <>
+                  <span className="chip-s" aria-hidden="true" title={t('common.startingServer')}>
+                    {t('common.startingServerMark')}
+                  </span>
+                  <span className="visually-hidden">{t('common.startingServer')}</span>
+                </>
               )}
               {role === 'server' && <span className="chip-role">{t('common.serve')}</span>}
               {role === 'receiver' && <span className="chip-role">{t('common.receive')}</span>}

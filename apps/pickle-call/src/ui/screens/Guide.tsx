@@ -38,13 +38,13 @@ const PRIVACY_ITEMS: TKey[] = [
   'guide.privacyItemPwa',
 ]
 
-/** 条番号の表示。CD-2242 は 2026年の変更点（Change Document）、CH-1 は第1章 */
+/** 条番号の表示。CD-2242 は 2026年の変更点（Change Document）、CH-1 は Part I の Section 1（The Game） */
 function RefItem({ id, lang }: { id: string; lang: Lang }) {
   const { t } = useApp()
   if (id === 'CH-1') {
     return (
       <li className="gd-ref">
-        <span className="gd-ref-no">{t('guide.ch1')}</span>
+        <span className="gd-ref-no gd-ref-text">{t('guide.ch1')}</span>
       </li>
     )
   }
@@ -52,7 +52,7 @@ function RefItem({ id, lang }: { id: string; lang: Lang }) {
   if (id.startsWith('CD-')) {
     return (
       <li className="gd-ref">
-        <span className="gd-ref-no num">{id.slice(3)}</span>
+        <span className="gd-ref-no gd-ref-text num">{t('learn.change', { no: id.slice(3) })}</span>
         <span className="gd-ref-title">{title}</span>
       </li>
     )

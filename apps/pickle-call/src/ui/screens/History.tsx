@@ -147,7 +147,7 @@ export function History() {
           </>
         }
       >
-        <p>{t('history.confirmBody', { n: list.length })}</p>
+        <p>{list.length === 1 ? t('history.confirmBodyOne') : t('history.confirmBody', { n: list.length })}</p>
       </Modal>
 
       <div role="status" className="sc-live">

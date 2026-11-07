@@ -160,7 +160,13 @@ export function replay(setup: Setup, events: readonly GameEvent[]): GameState {
 
 export const isOver = (state: GameState) => state.winner !== null
 
-/** 次のゲームの設定（エンドとサーブ権を交代。21.F.2）。スターティングサーバーは変えてよい（21.F.3） */
-export function nextGameSetup(setup: Setup): Setup {
-  return { ...setup, firstServingTeam: other(setup.firstServingTeam) }
+/**
+ * 次のゲームの設定（エンドとサーブ権を交代。21.F.2）。スターティングサーバーは変えてよい（21.F.3）が、既定はそのまま。
+ * startingServer を渡すと（前のゲームの終わりの状態。「スコアを直す」で直したものを含む）、ダブルスではそれを引き継ぐ
+ */
+export function nextGameSetup(setup: Setup, startingServer?: Record<Team, PlayerId>): Setup {
+  const next: Setup = { ...setup, firstServingTeam: other(setup.firstServingTeam) }
+  if (setup.format.kind !== 'doubles' || !startingServer) return next
+  const keep = (t: Team) => (startingServer[t] && teamOf(startingServer[t]) === t ? startingServer[t] : setup.startingServer[t])
+  return { ...next, startingServer: { A: keep('A'), B: keep('B') } }
 }

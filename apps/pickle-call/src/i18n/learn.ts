@@ -60,7 +60,7 @@ const en: Record<keyof typeof ja, string> = {
   'learn.reviewNg': 'Missed',
   'learn.reviewAnswer': 'Answer: {answer}',
   'learn.again': 'One more round',
-  'learn.tryScoring': 'Try it as score keeper',
+  'learn.tryScoring': 'Try the scorekeeper',
   'learn.home': 'Back to home',
 }
 
