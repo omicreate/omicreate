@@ -9,7 +9,7 @@
     "preview": "vite preview --port 4173 --strictPort",
     "test": "vitest run",
     "e2e": "playwright test --trace off",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p . && tsc -p e2e"
   },
   "dependencies": {
     "react": "^19.3.1",
