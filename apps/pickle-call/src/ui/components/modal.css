@@ -1,0 +1,46 @@
+.modal {
+  border: 0;
+  padding: 0;
+  margin: auto;
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.modal::backdrop {
+  background: rgba(10, 14, 20, 0.5);
+}
+.modal-box {
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.modal-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+.modal-actions {
+  display: flex;
+  gap: var(--s2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  /* 中身が長いモーダル（スコアを直す）でも、保存・やめるが画面の下に見えたままになるように */
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--surface);
+  padding-top: var(--s3);
+  padding-bottom: var(--s5);
+  margin-bottom: calc(-1 * var(--s5));
+}
+.modal-actions .btn {
+  flex: 1 1 auto;
+}

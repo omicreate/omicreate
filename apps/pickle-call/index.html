@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 読み込み先を自分のサイトに限る（匿名の回数の送り先だけ Google Apps Script を許可） -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1318" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ピックルコール" />
+    <title>ピックルコール</title>
+    <meta name="description" content="ピックルボールの得点係アプリ。勝ったチームをタップするだけで、次のコール（例: 4-2-1）・サーバー・立ち位置を、声とコート図で教えます。無料・登録不要・オフラインで動きます。" />
+    <meta property="og:title" content="ピックルコール — ピックルボールの得点係" />
+    <meta property="og:description" content="勝ったチームをタップするだけ。0-0-2 も左右の入れ替えも、声とコート図で。" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://omicreate.github.io/pickle-call/" />
+    <meta property="og:image" content="https://omicreate.github.io/pickle-call/ogp.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="ピックルコール" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>このアプリを使うには JavaScript を有効にしてください。 / Please enable JavaScript to use this app.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

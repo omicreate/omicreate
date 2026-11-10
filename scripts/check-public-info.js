@@ -12,7 +12,10 @@ const ignoredDirs = new Set([
   ".vercel",
   "coverage",
   "dist",
-  "node_modules"
+  "dist-artifact",
+  "node_modules",
+  "playwright-report",
+  "test-results"
 ]);
 
 const ignoredFiles = new Set([

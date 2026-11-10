@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      リンクを貼ったときの画像（OGP、1200×630）のひな形。scripts/build-ogp.mjs が Playwright で撮って public/ogp.png にする。
+      Web フォントは読み込まない。撮る端末に入っている書体を使う（日本語は Hiragino / Noto Sans JP / IPA ゴシックのどれか）。
+      © 2026 omicreate（NOTICE.md）
+    -->
+    <title>ピックルコール OGP</title>
+    <style>
+      :root {
+        --bg: #fafaf7;
+        --ink: #161616;
+        --mute: #5f5f5f;
+        --faint: #b9bdc4;
+        --line: #d9d9d2;
+        --a: #1f4e9c;
+        --b: #b4410c;
+        --court: #e4ebf2;
+        --kitchen: #d4dfeb;
+        --latin: "Inter", "Helvetica Neue", Arial, sans-serif;
+        --display: "Inter Display", "Inter", "Helvetica Neue", Arial, sans-serif;
+        --ja: "Inter", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans CJK JP", "IPAPGothic", "IPAGothic", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--ja);
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+      }
+      .frame {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        padding: 64px 72px 56px 80px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        grid-template-rows: 100%;
+        column-gap: 56px;
+      }
+      .left {
+        display: flex;
+        flex-direction: column;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .brand img {
+        width: 64px;
+        height: 64px;
+        display: block;
+      }
+      .brand .ja {
+        font-size: 38px;
+        line-height: 1.1;
+        letter-spacing: 0.04em;
+      }
+      .brand .en {
+        font-family: var(--latin);
+        font-weight: 600;
+        font-size: 22px;
+        color: var(--mute);
+        margin-top: 6px;
+        letter-spacing: 0.01em;
+      }
+      .call {
+        margin-top: 30px;
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        font-family: var(--display);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        line-height: 0.82;
+      }
+      .call .n {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 184px;
+        letter-spacing: -0.02em;
+      }
+      .call .n small {
+        margin-top: 22px;
+        font-family: var(--ja);
+        font-weight: 400;
+        font-size: 19px;
+        line-height: 1;
+        letter-spacing: 0.06em;
+        color: var(--mute);
+      }
+      .call .dash {
+        font-size: 184px;
+        color: var(--faint);
+        font-weight: 400;
+        margin: 0 -2px;
+      }
+      .call .server {
+        color: var(--a);
+      }
+      .promise {
+        margin: 34px 0 0;
+        font-size: 33px;
+        line-height: 1.5;
+        letter-spacing: 0.02em;
+      }
+      .foot {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      .tag {
+        font-size: 21px;
+        letter-spacing: 0.08em;
+        padding: 9px 18px 10px;
+        border: 1.5px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+      }
+      .url {
+        font-family: var(--latin);
+        font-size: 19px;
+        color: var(--mute);
+        letter-spacing: 0.01em;
+      }
+      .right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      svg.court {
+        display: block;
+        width: 214px;
+        height: auto;
+        overflow: visible;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="left">
+        <div class="brand">
+          <img src="../public/icon.svg" alt="" />
+          <div>
+            <div class="ja">ピックルコール</div>
+            <div class="en" lang="en">Pickle Call</div>
+          </div>
+        </div>
+
+        <div class="call" aria-label="0-0-2">
+          <span class="n">0<small>サーブ側</small></span>
+          <span class="dash">-</span>
+          <span class="n">0<small>レシーブ側</small></span>
+          <span class="dash">-</span>
+          <span class="n server">2<small>サーバー番号</small></span>
+        </div>
+
+        <p class="promise">勝ったチームをタップするだけ。<br />コールと立ち位置を、声と図で。</p>
+
+        <div class="foot">
+          <span class="tag">無料・登録不要・オフライン</span>
+          <span class="url" lang="en">omicreate.github.io/pickle-call</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <!-- 20×44 の縦長のコート。上が B（レシーブ側）、下が A（サーブ側）。0-0-2：A の右（見る人の右下）からサーブし、対角の B が受ける -->
+        <svg class="court" viewBox="0 0 220 484" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="220" height="484" rx="14" fill="#e4ebf2" />
+          <!-- キッチン（ネットから 7ft） -->
+          <rect x="0" y="165" width="220" height="154" fill="#d4dfeb" />
+          <g stroke="#ffffff" stroke-width="3" fill="none">
+            <rect x="1.5" y="1.5" width="217" height="481" rx="13" />
+            <line x1="0" y1="165" x2="220" y2="165" />
+            <line x1="0" y1="319" x2="220" y2="319" />
+            <!-- センターラインはサービスコートだけ -->
+            <line x1="110" y1="0" x2="110" y2="165" />
+            <line x1="110" y1="319" x2="110" y2="484" />
+          </g>
+          <!-- ネット -->
+          <line x1="-10" y1="242" x2="230" y2="242" stroke="#161616" stroke-width="3" stroke-linecap="round" />
+          <!-- サーブの向き（右下 → 左上の対角） -->
+          <path d="M 152 386 C 130 300, 100 190, 68 104" stroke="#1f4e9c" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" fill="none" />
+          <!-- B チーム（上） -->
+          <g font-family="Inter, Arial, sans-serif" font-weight="700" font-size="20" text-anchor="middle">
+            <circle cx="55" cy="82" r="30" fill="#ffffff" stroke="#b4410c" stroke-width="5" />
+            <text x="55" y="89" fill="#b4410c">B</text>
+            <circle cx="165" cy="82" r="26" fill="#b4410c" />
+            <text x="165" y="89" fill="#ffffff">B</text>
+            <!-- A チーム（下）。サーバーは太い輪 -->
+            <circle cx="55" cy="402" r="26" fill="#1f4e9c" />
+            <text x="55" y="409" fill="#ffffff">A</text>
+            <circle cx="165" cy="402" r="34" fill="none" stroke="#1f4e9c" stroke-width="5" />
+            <circle cx="165" cy="402" r="26" fill="#1f4e9c" />
+            <text x="165" y="409" fill="#ffffff">A</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </body>
+</html>

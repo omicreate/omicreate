@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="ピックルコール">
+  <!-- ピックルコールのアイコン © 2026 omicreate（NOTICE.md）。白いボールの穴のうち、まんなかの3つが「3つの数字のコール」 -->
+  <title>ピックルコール</title>
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a5ca9" />
+      <stop offset="1" stop-color="#1b4488" />
+    </linearGradient>
+  </defs>
+  <rect id="field-rect" width="512" height="512" rx="0" fill="url(#field)" />
+  <g>
+    <circle cx="256" cy="264.8" r="137.3" fill="#0f2a5a" opacity="0.28" />
+    <circle cx="256" cy="256" r="137.3" fill="#ffffff" />
+    <g fill="#e3e8f1">
+      <circle cx="197.9" cy="155.4" r="11.4" />
+      <circle cx="256" cy="155.4" r="11.4" />
+      <circle cx="314.1" cy="155.4" r="11.4" />
+      <circle cx="168.9" cy="205.7" r="11.4" />
+      <circle cx="227" cy="205.7" r="11.4" />
+      <circle cx="285" cy="205.7" r="11.4" />
+      <circle cx="343.1" cy="205.7" r="11.4" />
+      <circle cx="139.8" cy="256" r="11.4" />
+      <circle cx="372.2" cy="256" r="11.4" />
+      <circle cx="168.9" cy="306.3" r="11.4" />
+      <circle cx="227" cy="306.3" r="11.4" />
+      <circle cx="285" cy="306.3" r="11.4" />
+      <circle cx="343.1" cy="306.3" r="11.4" />
+      <circle cx="197.9" cy="356.6" r="11.4" />
+      <circle cx="256" cy="356.6" r="11.4" />
+      <circle cx="314.1" cy="356.6" r="11.4" />
+    </g>
+    <g fill="#1f4e9c">
+      <circle cx="197.9" cy="256" r="21.1" />
+      <circle cx="256" cy="256" r="21.1" />
+      <circle cx="314.1" cy="256" r="21.1" />
+    </g>
+  </g>
+</svg>
