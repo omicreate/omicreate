@@ -5,6 +5,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   archiveCustomer,
+  bookingDatePhrase,
+  bookingResolutionLabel,
   candidateLabels,
   CHANNEL_LABELS,
   computeDueInfo,
@@ -12,6 +14,7 @@ import {
   CONTACT_METHOD_LABELS,
   CONTACT_VIA_LABELS,
   dueBasisReason,
+  effectiveOpenBooking,
   formatDateWithWeekday,
   formatYearMonthJa,
   LIMITS,
@@ -33,7 +36,7 @@ import {
   type Visit,
 } from '../../domain'
 import { createDraftSaver } from '../../storage'
-import { skipKoekake, type SkipOption } from '../../state/actions'
+import { cancelBooking, skipKoekake, type SkipOption } from '../../state/actions'
 import { useApp, useSettings } from '../../state/AppState'
 import { contactsOf, customerById, useEligibility, visitsOf } from '../../state/derived'
 import { useFeedback } from '../../state/feedback'
@@ -85,6 +88,8 @@ export function CustomerCard({ id }: { id: string }) {
   const logs = contactsOf(contacts, customer.id).slice(0, 5)
   const first = candidateLabels(customer, visits, due, today).includes('first_visit')
   const isSalon = customer.stewardship.steward === 'salon'
+  const booking = effectiveOpenBooking(customer, visits, today)
+  const bookingHref = to('/booking', { c: customer.id, back: self })
 
   /** 保存の操作を1つずつ行い、失敗したら知らせる（4.6 エラー時） */
   const once = async (fn: () => Promise<void>) => {
@@ -119,6 +124,20 @@ export function CustomerCard({ id }: { id: string }) {
     once(async () => {
       await app.mutate((repo) => repo.putCustomer(unarchiveCustomer(customer, nowISO())))
       toast('リストに戻しました')
+    })
+
+  const onCancelBooking = () =>
+    once(async () => {
+      const repo = app.repo
+      if (!repo) return
+      if (!booking) return
+      const undo = await app.mutate((r) => cancelBooking(r, { customer, booking, now: nowISO() }))
+      offerUndo({
+        key: `booking:${customer.id}`,
+        message: `${customer.nickname}さんの予約を取り消しました`,
+        undo,
+        routeHash: self,
+      })
     })
 
   const onDelete = () =>
@@ -170,6 +189,36 @@ export function CustomerCard({ id }: { id: string }) {
           <p className="meta">本人には確かめていません（美容師の判断）</p>
         ) : null}
       </div>
+
+      <section className="card-flat stack-sm" aria-labelledby="booking-head">
+        <div className="kv">
+          <h2 className="label" id="booking-head">
+            予約
+          </h2>
+          {booking ? (
+            <strong>{bookingDatePhrase(booking.date, today)}</strong>
+          ) : (
+            <span className="muted small">入っていません</span>
+          )}
+        </div>
+        {booking && (
+          <p className="meta">{booking.source === 'customer' ? 'あとから入れた予約' : '会計時に入れた予約'}</p>
+        )}
+        {booking ? (
+          <div className="btn-pair">
+            <a className="btn btn-sm" href={bookingHref}>
+              予約日を変える
+            </a>
+            <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => void onCancelBooking()}>
+              予約を取り消す
+            </button>
+          </div>
+        ) : (
+          <a className="btn btn-outline btn-sm" href={bookingHref}>
+            予約日を入れる
+          </a>
+        )}
+      </section>
 
       {own.length === 0 ? (
         <Empty
@@ -323,7 +372,7 @@ function VisitItem({ v, menus, back }: { v: Visit; menus: readonly Menu[]; back:
           </p>
           <p className="meta">
             {menuText(v.menuIds, menus) || 'メニューなし'}・次回 {nextPlanLabel(v.next)}
-            {v.bookingResolution === 'not_visited' ? '（来なかった）' : ''}
+            {v.bookingResolution ? `（${bookingResolutionLabel(v.bookingResolution)}）` : ''}
             {v.price != null ? `・${v.price.toLocaleString('ja-JP')}円` : ''}
           </p>
           {v.recipe?.text && <p className="meta pre">レシピ: {v.recipe.text}</p>}

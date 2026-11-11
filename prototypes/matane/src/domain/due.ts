@@ -1,6 +1,7 @@
 /** 次回の目安日（仕様 6.4）と区分の判定（仕様 6.5） */
 import { addDays, addMonths, addWeeks, daysBetween } from './dates'
 import { personalCycle } from './cycle'
+import { bookingStatus, effectiveOpenBooking, hasOpenBooking, type OpenBooking } from './booking'
 import { lastVisitOf } from './visits'
 import type {
   CalcSettings,
@@ -27,11 +28,8 @@ export interface DueCore {
   personalIntervalsUsed: number
   /** basis が 'menu' のとき、目安に使ったメニュー */
   basisMenuId?: ID
-}
-
-/** 予約が未解決か（予約日があり、「来なかった」と確認していない） */
-export function hasOpenBooking(v: Visit | undefined): v is Visit & { next: { kind: 'booked'; date: ISODate } } {
-  return !!v && v.next.kind === 'booked' && !v.bookingResolution
+  /** 有効な予約（なければ null） */
+  booking: OpenBooking | null
 }
 
 /** 最終来店のメニューのうち、目安の日数がいちばん短いもの */
@@ -53,21 +51,25 @@ export function agreedDueDate(from: ISODate, amount: number, unit: 'week' | 'mon
 /**
  * 次回の目安日（6.4）。来店記録がなければ null。
  * 優先: 1 予約（未解決）→ 2 会計時の目安 → 3 いつもの周期 → 4 メニューの目安 → 5 全体の目安
+ * booking を渡すとそれを有効な予約として使う（effectiveOpenBooking の結果）。省略時は最後の来店記録の予約だけを見る。
  */
 export function computeDue(
   visits: readonly Visit[],
   menus: readonly Menu[],
   settings: Pick<CalcSettings, 'globalDefaultIntervalDays'>,
   today: ISODate,
+  booking?: OpenBooking | null,
 ): DueCore | null {
   const L = lastVisitOf(visits, today)
   if (!L) return null
+  const open: OpenBooking | null =
+    booking !== undefined ? booking : hasOpenBooking(L) ? { source: 'visit', date: L.next.date, visit: L } : null
   const cycle = personalCycle(visits, today)
   let dueDate: ISODate
   let basis: DueBasis
   let basisMenuId: ID | undefined
-  if (hasOpenBooking(L)) {
-    dueDate = L.next.date
+  if (open) {
+    dueDate = open.date
     basis = 'booked'
   } else if (L.next.kind === 'agreed') {
     dueDate = agreedDueDate(L.date, L.next.amount, L.next.unit)
@@ -95,6 +97,7 @@ export function computeDue(
     personalCycleDays: cycle.days,
     personalIntervalsUsed: cycle.intervalsUsed,
     basisMenuId,
+    booking: open,
   }
 }
 
@@ -122,12 +125,7 @@ export function classifyStatus(
 ): TimingStatus {
   if (archived) return 'archived'
   if (!core) return 'no_data'
-  const L = core.lastVisit
-  if (hasOpenBooking(L)) {
-    if (L.next.date > today) return 'booked'
-    if (L.next.date === today) return 'today'
-    return 'confirm'
-  }
+  if (core.booking) return bookingStatus(core.booking.date, today)
   return statusFromElapsed(core.elapsedDays, core.intervalDays, thresholds)
 }
 
@@ -140,14 +138,21 @@ export function computeDueInfo(
   today: ISODate,
 ): DueInfo {
   const own = visits.filter((v) => v.customerId === customer.id)
-  const core = computeDue(own, menus, settings, today)
+  const booking = effectiveOpenBooking(customer, own, today)
+  const core = computeDue(own, menus, settings, today, booking)
+  if (!core) {
+    // 来店記録がなくても、あとから入れた予約があれば予約の区分にする
+    if (customer.archived) return { status: 'archived' }
+    if (booking) return { status: bookingStatus(booking.date, today), dueDate: booking.date, basis: 'booked', bookingSource: booking.source }
+    return { status: 'no_data' }
+  }
   const st = classifyStatus(core, !!customer.archived, settings.thresholds, today)
-  if (!core) return { status: st }
   return {
     status: st,
     lastVisit: core.lastVisit,
     dueDate: core.dueDate,
     basis: core.basis,
+    ...(core.booking ? { bookingSource: core.booking.source } : {}),
     intervalDays: core.intervalDays,
     elapsedDays: core.elapsedDays,
     personalCycleDays: core.personalCycleDays,

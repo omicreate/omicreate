@@ -8,9 +8,10 @@ import {
   applyVisitToCustomer,
   batchTargets,
   createVisit,
+  effectiveOpenBooking,
   formatDateWithWeekday,
-  hasOpenBooking,
   markNotVisited,
+  withoutBooking,
   menuText,
   validateVisitInput,
   VALIDATION_MESSAGES,
@@ -103,6 +104,9 @@ export function Batch() {
     const now = nowISO()
     const created: string[] = []
     const changed: Visit[] = []
+    /** 保存で書き換えた顧客の、元の状態（取り消しで戻す） */
+    const changedCustomers: Customer[] = []
+    let notVisitedCount = 0
     const unarchived: Customer[] = []
     const failedIds: string[] = []
     const done: string[] = []
@@ -112,17 +116,24 @@ export function Batch() {
       try {
         if (r.state === 'came') {
           const v = createVisit({ customerId: cid, date, menuIds: r.menuIds, next: r.next, source: 'batch', now })
-          // 来店を記録したら、リストから外していた客は自動で戻す（4.3）
-          const applied = applyVisitToCustomer(p.customer, { today, now })
+          // 来店を記録したら、リストから外していた客は自動で戻す（4.3）。あとから入れた予約は、この来店で済んだものとして消す
+          const applied = applyVisitToCustomer(p.customer, { today, now, visitDate: date })
           await repo.saveVisitWithCustomer(v, applied.changed ? applied.customer : undefined)
           created.push(v.id)
+          if (applied.changed) changedCustomers.push(p.customer)
           if (applied.unarchived) unarchived.push(p.customer)
           done.push(cid)
         } else if (r.state === 'no') {
-          const prev = prevOf(cid)
-          if (prev && hasOpenBooking(prev) && prev.next.date === date) {
-            await repo.putVisit(markNotVisited(prev, now))
-            changed.push(prev)
+          const booking = effectiveOpenBooking(p.customer, visitsOf(visits, cid, date), date)
+          if (booking && booking.date === date) {
+            if (booking.source === 'visit') {
+              await repo.putVisit(markNotVisited(booking.visit, now))
+              changed.push(booking.visit)
+            } else {
+              await repo.putCustomer(withoutBooking(p.customer, now))
+              changedCustomers.push(p.customer)
+            }
+            notVisitedCount++
           }
           done.push(cid)
         }
@@ -141,7 +152,7 @@ export function Batch() {
     if (failedIds.length === 0) await draft.clear()
     setBusy(false)
     const n = created.length
-    const m = changed.length
+    const m = notVisitedCount
     if (unarchived.length > 0) toast(`${unarchived.length}人をリストに戻しました`)
     if (n + m > 0) {
       offerUndo({
@@ -149,7 +160,7 @@ export function Batch() {
         undo: async () => {
           await repo.purgeVisits(created)
           for (const v of changed) await repo.putVisit(v)
-          if (unarchived.length) await repo.putCustomers(unarchived)
+          if (changedCustomers.length) await repo.putCustomers(changedCustomers)
         },
       })
     }

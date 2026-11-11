@@ -1,4 +1,5 @@
 /** 記録を作る・直すための純粋関数（保存は storage 側で行う） */
+import { bookingSetOn } from './booking'
 import { addDays } from './dates'
 import { parseLastVisitInput, type LastVisitParse } from './lastVisitInput'
 import type {
@@ -131,13 +132,30 @@ export function copyRecipeFrom(visit: Visit | undefined): ColorRecipeMemo | unde
  * リストから外していた客は自動で戻す（unarchived = true のとき「リストに戻しました」）。
  * ただし既存の来店記録を直しただけ（editing）のときは戻さない（引っ越しなどで外した人が、メモの手直しで候補に戻らないように）。
  * 連絡の可否を記録で更新したときは確かめた日を残す。
+ * 新しい来店の日付（visitDate）が、あとから入れた予約を入れた日以降なら、その予約を消す（新しい来店記録の次回が引き継ぐ）。
  */
 export function applyVisitToCustomer(
   customer: Customer,
-  input: { permission?: ContactPermission; today: ISODate; now: ISODateTime; editing?: boolean },
-): { customer: Customer; unarchived: boolean; changed: boolean } {
+  input: { permission?: ContactPermission; today: ISODate; now: ISODateTime; editing?: boolean; visitDate?: ISODate },
+): { customer: Customer; unarchived: boolean; changed: boolean; bookingCleared: boolean } {
   let next: Customer = customer
   let changed = false
+  let bookingCleared = false
+  if (!input.editing && input.visitDate && customer.booking) {
+    let setOn: ISODate | null = null
+    try {
+      setOn = bookingSetOn(customer.booking)
+    } catch {
+      setOn = null
+    }
+    if (!setOn || input.visitDate >= setOn) {
+      const { booking: _b, ...rest } = next
+      void _b
+      next = rest
+      changed = true
+      bookingCleared = true
+    }
+  }
   const unarchived = !!customer.archived && !input.editing
   if (unarchived) {
     const { archived: _a, ...rest } = next
@@ -156,7 +174,7 @@ export function applyVisitToCustomer(
     changed = true
   }
   if (changed) next = { ...next, updatedAt: input.now }
-  return { customer: next, unarchived, changed }
+  return { customer: next, unarchived, changed, bookingCleared }
 }
 
 /**

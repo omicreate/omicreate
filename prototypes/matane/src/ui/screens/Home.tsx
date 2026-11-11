@@ -15,7 +15,7 @@ import {
   type TodayCustomer,
 } from '../../domain'
 import { loadSampleData, SAMPLE_DB } from '../../storage'
-import { setNotVisited } from '../../state/actions'
+import { resolveNotVisited } from '../../state/actions'
 import { useApp, useSettings } from '../../state/AppState'
 import { useHomeModel } from '../../state/derived'
 import { useFeedback } from '../../state/feedback'
@@ -26,7 +26,7 @@ import { ChevronRight } from '../components/Icons'
 
 export const HOME_TEXT = {
   noCustomers: 'まずはお客様をざっくり登録しましょう。呼び名と、最後に来た月だけで始められます',
-  noToday: '今日の予約は入っていません。会計時に次回の予約日を入れると、ここに出ます',
+  noToday: '今日の予約は入っていません。会計時に次回の予約日を入れるか、［予約を入れる］で入れると、ここに出ます',
   noCandidates: '今日は声をかける人はいません',
   profileHint: 'またねカードと声かけの文面には、自分の名前（署名）と予約リンクが入ります。',
   profileLink: '自分の名前と予約リンクを設定する',
@@ -44,19 +44,17 @@ export function Home() {
   const startSample = () => app.openDb(SAMPLE_DB, (repo) => loadSampleData(repo, app.today, nowISO()))
 
   const notVisited = async (item: ConfirmItem) => {
-    let original
+    let undo: () => Promise<void>
     try {
-      original = await app.mutate((repo) => setNotVisited(repo, item.visit, nowISO()))
+      undo = await app.mutate((repo) => resolveNotVisited(repo, { customer: item.customer, booking: item.booking, now: nowISO() }))
     } catch {
       toast(MESSAGES.saveFailed)
       return
     }
     offerUndo({
-      key: `not-visited:${item.visit.id}`,
+      key: `not-visited:${item.booking.source === 'visit' ? item.booking.visit.id : `customer:${item.customer.id}`}`,
       message: `${item.customer.nickname}さんを「来なかった」にしました`,
-      undo: async () => {
-        await app.repo?.putVisit(original)
-      },
+      undo,
     })
   }
 
@@ -106,6 +104,13 @@ export function Home() {
       <a className="btn btn-hero" href={to('/visit')}>
         来店を記録
       </a>
+      {/* 主ボタンより目立たせない（会計後に LINE・電話で入った予約を、美容師が自分で入れる）。
+          お客様がまだいなくても出す（電話の新しいお客様の予約から始めることもあるので） */}
+      <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+        <a className="btn btn-outline btn-sm" href={to('/booking')}>
+          予約を入れる
+        </a>
+      </div>
 
       {model.noCustomers ? (
         <Empty
@@ -229,10 +234,12 @@ function TodayRow({ item, menus }: { item: TodayCustomer; menus: readonly Menu[]
         <a className="name stretched" href={`#/customer/${encodeURIComponent(item.customer.id)}`} style={{ color: 'inherit', textDecoration: 'none' }}>
           {item.customer.nickname}
         </a>
-        {prev && (
+        {prev ? (
           <p className="meta">
             前回 {formatMonthDay(prev.date)}　{menuText(prev.menuIds, menus) || 'メニューなし'}
           </p>
+        ) : item.recorded ? null : (
+          <p className="meta">はじめてのご来店</p>
         )}
         {recipe && <p className="meta clamp2">レシピ: {recipe}</p>}
         {talk && <p className="meta oneline">会話: {talk}</p>}

@@ -80,6 +80,10 @@ export function validateBackupPayload(x: unknown): PayloadCheck {
   for (const c of customers) {
     if (!isObj(c) || !isStr(c.id) || !isStr(c.nickname)) return { ok: false, reason: 'corrupt' }
     if (!isObj(c.stewardship) || !isObj(c.contact)) return { ok: false, reason: 'corrupt' }
+    // あとから入れた予約（S10）。古いバックアップにはないので、あるときだけ形を確かめる
+    if (c.booking !== undefined && (!isObj(c.booking) || !isValidISODate(c.booking.date) || !isStr(c.booking.setAt))) {
+      return { ok: false, reason: 'corrupt' }
+    }
   }
   for (const v of x.visits as unknown[]) {
     if (!isObj(v) || !isStr(v.id) || !isStr(v.customerId) || !isValidISODate(v.date)) return { ok: false, reason: 'corrupt' }

@@ -12,6 +12,7 @@ import { nowISO } from './state/today'
 import { SampleBand, StorageBand, TabBar, type TabKey } from './ui/components/Chrome'
 import { RestoreForm } from './ui/components/RestoreForm'
 import { Batch } from './ui/screens/Batch'
+import { Booking } from './ui/screens/Booking'
 import { Board } from './ui/screens/Board'
 import { BulkRegister } from './ui/screens/BulkRegister'
 import { CustomerCard } from './ui/screens/CustomerCard'
@@ -40,6 +41,7 @@ function tabOf(route: Route): TabKey | null {
   switch (route.path[0]) {
     case undefined:
     case 'visit':
+    case 'booking':
     case 'batch':
     case 'koekake':
       return 'home'
@@ -63,6 +65,8 @@ function Screen({ route }: { route: Route }) {
       return <Home />
     case 'visit':
       return <VisitForm key={route.hash} editId={arg} params={route.params} />
+    case 'booking':
+      return <Booking key={route.hash} params={route.params} />
     case 'batch':
       return <Batch />
     case 'koekake':

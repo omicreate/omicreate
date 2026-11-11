@@ -46,6 +46,15 @@ export interface ContactConsent {
   method?: ContactMethod // 対面で聞いた／メッセージの返事で
 }
 
+/**
+ * あとから入れた予約（S10「予約を入れる」）。美容師が自分で手入力した日付だけを残す。
+ * 時刻・貼り付けた文は残さない。来店を保存すると消える（その来店記録の次回が引き継ぐ）
+ */
+export interface CustomerBooking {
+  date: ISODate // 予約日
+  setAt: ISODateTime // 入れた日時（この日付以降の来店があれば、この予約は済んだものとみなす）
+}
+
 export interface Customer {
   id: ID
   nickname: string // 呼び名。1〜20文字。フルネームは求めない
@@ -56,6 +65,7 @@ export interface Customer {
   contact: ContactConsent
   pinnedMemo?: string // 顧客カード上部の一言。最大100文字。健康のことは書かない
   snoozeUntil?: ISODate // この日まで声かけ候補に出さない（当日を含む）
+  booking?: CustomerBooking // あとから入れた予約（来店記録の次回の予約より優先）
   archived?: { on: ISODate; reason: 'stopped' | 'moved' | 'other' } // リストから外した
   createdAt: ISODateTime
   updatedAt: ISODateTime
@@ -79,6 +89,15 @@ export interface ColorRecipeMemo {
 
 export type VisitSource = 'checkout' | 'batch' | 'one_line' | 'bulk' | 'fix'
 
+/**
+ * 来店記録の次回の予約を片付けた理由:
+ *  - not_visited: 予約日を過ぎて「来なかった」と確認した
+ *  - replaced: ［予約を入れる］で別の日に変えた（あとから入れた予約に置き換えた）
+ *  - cancelled: 顧客カードの［予約を取り消す］で取り消した
+ * ボードの「次回の約束あり」は next で数えるので、片付けても数は変わらない。
+ */
+export type BookingResolution = 'not_visited' | 'replaced' | 'cancelled'
+
 export interface Visit {
   id: ID
   customerId: ID
@@ -87,7 +106,7 @@ export interface Visit {
   menuIds: ID[] // 1つ以上。ざっくり登録だけは0でもよい
   price?: number // 円・0以上の整数・任意。MVPでは集計に使わない
   next: NextPlan
-  bookingResolution?: 'not_visited' // 予約日を過ぎて「来なかった」と確認した
+  bookingResolution?: BookingResolution // 予約を片付けた（来なかった／予約日を変えた／取り消した）
   recipe?: ColorRecipeMemo
   talkMemo?: string // 会話メモ。最大500文字
   source: VisitSource // 入力した経路（fix＝実は来ていた）
@@ -237,6 +256,8 @@ export interface DueInfo {
   lastVisit?: Visit
   dueDate?: ISODate
   basis?: DueBasis
+  /** basis が 'booked' のとき、予約の出どころ（来店記録の次回／あとから入れた予約） */
+  bookingSource?: 'visit' | 'customer'
   intervalDays?: number // I = 目安日 − 最終来店日
   elapsedDays?: number // E = 今日 − 最終来店日
   personalCycleDays?: number | null

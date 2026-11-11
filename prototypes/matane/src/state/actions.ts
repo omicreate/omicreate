@@ -10,7 +10,11 @@ import {
   markNotVisited,
   snoozeUntilFor,
   unmarkNotVisited,
+  withBooking,
   withContactPermission,
+  withBookingResolution,
+  withoutBooking,
+  type OpenBooking,
   type AcquisitionChannel,
   type ColorRecipeMemo,
   type ContactKind,
@@ -125,7 +129,13 @@ export async function saveVisit(repo: Repository, input: SaveVisitInput): Promis
   if (isNewCustomer) {
     await repo.saveRecords({ customers: [customer], visits: [visit] })
   } else {
-    const applied = applyVisitToCustomer(customer, { permission: input.permission, today, now, editing: !!input.editing })
+    const applied = applyVisitToCustomer(customer, {
+      permission: input.permission,
+      today,
+      now,
+      editing: !!input.editing,
+      visitDate: fields.date,
+    })
     unarchived = applied.unarchived
     customer = applied.changed ? applied.customer : customer
     await repo.saveVisitWithCustomer(visit, applied.changed ? applied.customer : undefined)
@@ -184,6 +194,84 @@ export async function skipKoekake(
 export async function setNotVisited(repo: Repository, visit: Visit, now: ISODateTime): Promise<Visit> {
   await repo.putVisit(markNotVisited(visit, now))
   return visit
+}
+
+/**
+ * 来た？の［来なかった］（あとから入れた予約にも対応）。
+ * 来店記録の予約なら bookingResolution を付け、あとから入れた予約なら customer.booking を消す。
+ * 取り消すための関数を返す。
+ */
+export async function resolveNotVisited(
+  repo: Repository,
+  input: { customer: Customer; booking: OpenBooking; now: ISODateTime },
+): Promise<() => Promise<void>> {
+  const { customer, booking, now } = input
+  if (booking.source === 'visit') {
+    const original = await setNotVisited(repo, booking.visit, now)
+    return () => repo.putVisit(original)
+  }
+  await repo.putCustomer(withoutBooking(customer, now))
+  return () => repo.putCustomer(customer)
+}
+
+/**
+ * 予約を入れる（S10）: 客（新しい客ならその場で登録）に、あとから入れた予約を付ける。
+ * current（いまの有効な予約）が会計時に入れた予約なら、その来店記録に「予約日を変えた」（replaced）の印を付けて片付ける。
+ * こうしないと、あとから入れた予約を取り消したり［来なかった］にしたときに、古い予約が戻ってくる。
+ * 取り消すための関数を返す。
+ */
+export async function saveBooking(
+  repo: Repository,
+  input: {
+    customer?: Customer
+    newCustomer?: { nickname: string; steward: DataSteward; channel: AcquisitionChannel }
+    /** いまの有効な予約（effectiveOpenBooking の結果） */
+    current?: OpenBooking | null
+    date: ISODate
+    today: ISODate
+    now: ISODateTime
+  },
+): Promise<{ customer: Customer; created: boolean; undo: () => Promise<void> }> {
+  const { date, today, now } = input
+  if (input.customer) {
+    const previous = input.customer
+    const next = withBooking(previous, date, now)
+    const current = input.current
+    if (current?.source === 'visit' && current.visit.customerId === previous.id) {
+      const originalVisit = current.visit
+      await repo.saveVisitWithCustomer(withBookingResolution(originalVisit, 'replaced', now), next)
+      return {
+        customer: next,
+        created: false,
+        undo: () => repo.saveVisitWithCustomer(originalVisit, previous),
+      }
+    }
+    await repo.putCustomer(next)
+    return { customer: next, created: false, undo: () => repo.putCustomer(previous) }
+  }
+  if (!input.newCustomer) throw new Error('客が選ばれていません')
+  const c = createCustomer({ ...input.newCustomer, today, now })
+  const next = withBooking(c, date, now)
+  await repo.putCustomer(next)
+  return { customer: next, created: true, undo: () => repo.purgeCustomer(next.id) }
+}
+
+/**
+ * 顧客カードの［予約を取り消す］。あとから入れた予約なら customer.booking を消し、
+ * 会計時に入れた予約ならその来店記録に「取り消した」（cancelled）の印を付ける。取り消すための関数を返す。
+ */
+export async function cancelBooking(
+  repo: Repository,
+  input: { customer: Customer; booking: OpenBooking; now: ISODateTime },
+): Promise<() => Promise<void>> {
+  const { customer, booking, now } = input
+  if (booking.source === 'visit') {
+    const original = booking.visit
+    await repo.putVisit(withBookingResolution(original, 'cancelled', now))
+    return () => repo.putVisit(original)
+  }
+  await repo.putCustomer(withoutBooking(customer, now))
+  return () => repo.putCustomer(customer)
 }
 
 export async function clearNotVisited(repo: Repository, visit: Visit, now: ISODateTime): Promise<void> {

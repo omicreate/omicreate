@@ -261,7 +261,7 @@ export function dueBasisReason(
         ? `全体の目安 約${settings.globalDefaultIntervalDays}日（${GLOBAL_DEFAULT_SOURCE.short}）`
         : `全体の目安 約${settings.globalDefaultIntervalDays}日（設定で変更した値）`
     case 'booked':
-      return '会計時に入れた予約日'
+      return due.bookingSource === 'customer' ? 'あとから入れた予約日' : '会計時に入れた予約日'
     default:
       return ''
   }

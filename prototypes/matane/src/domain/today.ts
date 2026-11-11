@@ -1,6 +1,7 @@
 /** 今日のお客様・来た？の確認（仕様 6.7） */
 import { addDays } from './dates'
-import { computeDueInfo, hasOpenBooking } from './due'
+import { effectiveOpenBooking, type OpenBooking } from './booking'
+import { computeDueInfo } from './due'
 import { compareNames } from './text'
 import { groupVisitsByCustomer, lastVisitOf, normalizeVisits } from './visits'
 import type { CalcSettings, Customer, DueInfo, ISODate, ISODateTime, Menu, Visit } from './types'
@@ -17,8 +18,9 @@ export interface TodayCustomer {
 
 /**
  * 今日のお客様（6.7）:
- *  (a) 日付が T より前の記録のうち最新のものが next = 予約(T) で未解決、または
+ *  (a) 有効な予約（effectiveOpenBooking。あとから入れた予約を含む）の日付が T、または
  *  (b) 日付が T の来店記録がある
+ * 来店記録のない客でも、予約が T なら出す（previousVisit はなし）。
  * 並びは「まだ」→「記録済み」、それぞれ呼び名順。
  */
 export function todaysCustomers(
@@ -35,7 +37,8 @@ export function todaysCustomers(
     const previousVisit = before.length ? before[before.length - 1] : undefined
     const todays = own.filter((v) => v.date === today)
     const todayVisit = todays.length ? todays[todays.length - 1] : undefined
-    const bookedToday = hasOpenBooking(previousVisit) && previousVisit.next.date === today
+    const booking = effectiveOpenBooking(customer, own, today)
+    const bookedToday = booking?.date === today
     if (todayVisit || bookedToday) {
       out.push({ customer, recorded: !!todayVisit, previousVisit, todayVisit })
     }
@@ -52,12 +55,15 @@ export interface ConfirmItem {
   due: DueInfo
   /** 予約日（過ぎている） */
   bookedDate: ISODate
-  /** 予約日を入れた来店記録（「来なかった」でここに bookingResolution を付ける） */
-  visit: Visit
+  /** 予約の出どころ（「来なかった」で、来店記録なら bookingResolution を付け、あとから入れた予約なら消す） */
+  booking: OpenBooking
+  /** 予約日を入れた来店記録（会計時に入れた予約のとき） */
+  visit?: Visit
 }
 
 /**
- * 来た？の確認（6.7）: status = 'confirm' の顧客。並びは予約日の古い順（同じなら呼び名順）。
+ * 来た？の確認（6.7）: status = 'confirm' の顧客（来店記録のない客の、あとから入れた予約も含む）。
+ * 並びは予約日の古い順（同じなら呼び名順）。
  */
 export function confirmList(
   customers: readonly Customer[],
@@ -72,8 +78,10 @@ export function confirmList(
     if (customer.deletedAt) continue
     const own = visitsBy.get(customer.id) ?? []
     const due = computeDueInfo(customer, own, menus, settings, today)
-    if (due.status !== 'confirm' || !due.lastVisit || due.lastVisit.next.kind !== 'booked') continue
-    out.push({ customer, due, bookedDate: due.lastVisit.next.date, visit: due.lastVisit })
+    if (due.status !== 'confirm') continue
+    const booking = effectiveOpenBooking(customer, own, today)
+    if (!booking) continue
+    out.push({ customer, due, bookedDate: booking.date, booking, ...(booking.source === 'visit' ? { visit: booking.visit } : {}) })
   }
   out.sort((a, b) => {
     if (a.bookedDate !== b.bookedDate) return a.bookedDate < b.bookedDate ? -1 : 1

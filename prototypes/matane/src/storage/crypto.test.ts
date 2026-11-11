@@ -255,3 +255,52 @@ describe('平文の書き出し（JSON・CSV）', () => {
     expect(csv).toContain('"も""み""じ","2026-07-04","","カット・白髪染め","目安 6週","8800","","旅行, 京都\n紅葉","本人","本人LINE"')
   })
 })
+
+describe('あとから入れた予約（S10）のバックアップ・書き出し', () => {
+  const BOOKING = { date: '2026-11-20', setAt: '2026-11-07T01:00:00.000Z' }
+  function withBooking(): BackupPayload {
+    const p = demo()
+    p.customers = p.customers.map((c) => (c.id === SAMPLE_IDS.tsubaki ? { ...c, booking: BOOKING } : c))
+    return p
+  }
+
+  it('暗号化バックアップで往復し、復元しても booking が残る', async () => {
+    const payload = withBooking()
+    const file = await encryptBackup(payload, PASS, { iterations: FAST, now: NOW })
+    const res = await decryptBackup(serializeBackupFile(file), PASS)
+    expect(res.ok).toBe(true)
+    if (!res.ok) return
+    expect(res.payload.customers.find((c) => c.id === SAMPLE_IDS.tsubaki)?.booking).toEqual(BOOKING)
+    const repo = await openRepository({ dbName: PROD_DB, factory: new IDBFactory() })
+    await restoreFromPayload(repo, res.payload, NOW)
+    const back = await exportPayload(repo, T)
+    expect(back.customers.find((c) => c.id === SAMPLE_IDS.tsubaki)?.booking).toEqual(BOOKING)
+  })
+
+  it('古いバックアップ（booking なし）も読める', async () => {
+    const payload = demo()
+    expect(payload.customers.some((c) => 'booking' in c)).toBe(false)
+    const file = await encryptBackup(payload, PASS, { iterations: FAST, now: NOW })
+    expect((await decryptBackup(serializeBackupFile(file), PASS)).ok).toBe(true)
+  })
+
+  it('booking の形が壊れていれば corrupt', async () => {
+    const payload = demo()
+    payload.customers[0] = { ...payload.customers[0], booking: { date: '20日', setAt: NOW } }
+    const file = await encryptBackup(payload, PASS, { iterations: FAST, now: NOW })
+    const res = await decryptBackup(serializeBackupFile(file), PASS)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error).toBe('corrupt')
+  })
+
+  it('平文 JSON に booking が入り、CSV は来店日を空にした1行で出す', () => {
+    const payload = withBooking()
+    const parsed = JSON.parse(plainJsonExport(payload)) as BackupPayload
+    expect(parsed.customers.find((c) => c.id === SAMPLE_IDS.tsubaki)?.booking).toEqual(BOOKING)
+    const lines = plainCsvExport(payload).slice(1).trimEnd().split('\r\n')
+    const nonSalonVisits = payload.visits.filter((v) => v.customerId !== SAMPLE_IDS.anzu)
+    expect(lines).toHaveLength(1 + nonSalonVisits.length + 1)
+    const tsubaki = lines.filter((l) => l.startsWith('"つばき"'))
+    expect(tsubaki[tsubaki.length - 1]).toBe('"つばき","","","","予約 2026-11-20（あとから入れた予約）","","","","本人","紹介"')
+  })
+})

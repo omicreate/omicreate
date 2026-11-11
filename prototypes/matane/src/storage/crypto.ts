@@ -9,8 +9,10 @@
  *   PIN は覗き見防止で、端末内のデータは暗号化しない。
  */
 import {
+  bookingResolutionLabel,
   CHANNEL_LABELS,
   compareNames,
+  isValidISODate,
   menuNames,
   MESSAGES,
   STEWARD_LABELS,
@@ -327,7 +329,7 @@ function nextCsv(v: Visit): string {
   const n: NextPlan = v.next
   switch (n.kind) {
     case 'booked':
-      return v.bookingResolution === 'not_visited' ? `予約 ${n.date}（来なかった）` : `予約 ${n.date}`
+      return v.bookingResolution ? `予約 ${n.date}（${bookingResolutionLabel(v.bookingResolution)}）` : `予約 ${n.date}`
     case 'agreed':
       return n.unit === 'week' ? `目安 ${n.amount}週` : `目安 ${n.amount}か月`
     case 'omakase':
@@ -337,21 +339,43 @@ function nextCsv(v: Visit): string {
   }
 }
 
-/** CSV: 1行＝1来店、所属サロンの顧客を除く、UTF-8 BOM つき、改行は CRLF */
+/** CSV の「次回」欄に出す、あとから入れた予約（その行の来店日は空） */
+export function bookingCsvNext(date: ISODate): string {
+  return `予約 ${date}（あとから入れた予約）`
+}
+
+/**
+ * CSV: 1行＝1来店、所属サロンの顧客を除く、UTF-8 BOM つき、改行は CRLF。
+ * あとから入れた予約（customer.booking）は、その客の来店の行のあとに、来店日を空にした1行で出す。
+ */
 export function plainCsvExport(payload: BackupPayload): string {
   const p = withoutSalonCustomers(payload)
   const byId = new Map(p.customers.filter((c) => !c.deletedAt).map((c) => [c.id, c]))
-  const rows = p.visits
-    .filter((v) => !v.deletedAt && byId.has(v.customerId))
-    .sort((a, b) => {
-      const c = compareNames(byId.get(a.customerId)!, byId.get(b.customerId)!)
-      if (c !== 0) return c
-      if (a.customerId !== b.customerId) return a.customerId < b.customerId ? -1 : 1
-      return a.date < b.date ? -1 : a.date > b.date ? 1 : 0
-    })
+  type Row = { customerId: string; date: string; visit?: Visit; booking?: ISODate }
+  const items: Row[] = [
+    ...p.visits.filter((v) => !v.deletedAt && byId.has(v.customerId)).map((v) => ({ customerId: v.customerId, date: v.date, visit: v })),
+    ...[...byId.values()]
+      .filter((c) => c.booking && isValidISODate(c.booking.date))
+      .map((c) => ({ customerId: c.id, date: '\uffff', booking: c.booking!.date })),
+  ]
+  const rows = items.sort((a, b) => {
+    const c = compareNames(byId.get(a.customerId)!, byId.get(b.customerId)!)
+    if (c !== 0) return c
+    if (a.customerId !== b.customerId) return a.customerId < b.customerId ? -1 : 1
+    return a.date < b.date ? -1 : a.date > b.date ? 1 : 0
+  })
   const lines = [CSV_HEADER.map(csvField).join(',')]
-  for (const v of rows) {
-    const c = byId.get(v.customerId)!
+  for (const row of rows) {
+    const c = byId.get(row.customerId)!
+    const v = row.visit
+    if (!v) {
+      lines.push(
+        [c.nickname, '', '', '', bookingCsvNext(row.booking!), '', '', '', STEWARD_LABELS[c.stewardship.steward], CHANNEL_LABELS[c.stewardship.channel]]
+          .map(csvField)
+          .join(','),
+      )
+      continue
+    }
     lines.push(
       [
         c.nickname,
