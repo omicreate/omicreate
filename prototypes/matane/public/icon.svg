@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>またね帳</title>
+  <rect width="512" height="512" rx="112" fill="#2f5d8a"/>
+  <g fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M288.1 136.2 A124 124 0 1 1 139.5 213.6" /><path d="M88.9 235.6 L141.5 208.0 L164.1 263.0" /><circle cx="256" cy="256" r="28" fill="#ffffff" stroke="none" />
+  </g>
+</svg>
